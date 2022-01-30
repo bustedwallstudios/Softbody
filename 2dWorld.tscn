@@ -1,0 +1,53 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://SquishyBody.gd" type="Script" id=1]
+[ext_resource path="res://Objects/PhysicsPoint.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Objects/Spring.tscn" type="PackedScene" id=3]
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 119, 12.5 )
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+
+[node name="SquishyBody" type="Node2D" parent="."]
+position = Vector2( -198, -225 )
+script = ExtResource( 1 )
+PhysicsPoint = ExtResource( 2 )
+PhysicsSpring = ExtResource( 3 )
+width = 4
+height = 4
+pointRadius = 7.0
+
+[node name="Ground" type="Node2D" parent="."]
+
+[node name="Ground" type="StaticBody2D" parent="Ground"]
+position = Vector2( -186, 103 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="GroundCollision" type="CollisionShape2D" parent="Ground/Ground"]
+shape = SubResource( 1 )
+
+[node name="GroundShape" type="Polygon2D" parent="Ground/Ground"]
+position = Vector2( 0, -8.5 )
+scale = Vector2( 20, 20 )
+polygon = PoolVector2Array( -5.95, -0.225, 5.95, -0.225, 5.95, 1.075, -5.95, 1.075 )
+
+[node name="Ground2" type="StaticBody2D" parent="Ground"]
+position = Vector2( 232, 207 )
+rotation = -0.416342
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="GroundCollision" type="CollisionShape2D" parent="Ground/Ground2"]
+shape = SubResource( 1 )
+
+[node name="GroundShape" type="Polygon2D" parent="Ground/Ground2"]
+position = Vector2( 0, -8.5 )
+scale = Vector2( 20, 20 )
+polygon = PoolVector2Array( -5.95, -0.225, 5.95, -0.225, 5.95, 1.075, -5.95, 1.075 )

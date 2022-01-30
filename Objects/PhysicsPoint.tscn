@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="CircleShape2D" id=1]
+radius = 10.198
+
+[node name="RigidBody2D" type="RigidBody2D"]
+gravity_scale = 10.0
+continuous_cd = 2
+can_sleep = false
+linear_damp = 0.0
+angular_damp = 0.0
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+shape = SubResource( 1 )
+
+[node name="Marker" type="Polygon2D" parent="."]
+color = Color( 0, 0, 1, 1 )
+polygon = PoolVector2Array( -10, 0, -7, -7, 0, -10, 7, -7, 10, 0, 7, 7, 0, 10, -7, 7 )
