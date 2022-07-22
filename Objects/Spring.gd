@@ -1,75 +1,88 @@
 extends Node2D
 
-# basically i can only have NodePaths as the export variable, and i have 
-# to literally just call get_node() on them IMMEDIATELY when the thing
-# starts, TO CONVERT THEM TO AN ACTUAL NODE.
+# basically the export variable can only be a NodePath type instead of 
+# a Node itself, so I have to literally just call get_node() on them
+# IMMEDIATELY when the thing starts, TO CONVERT THEM TO AN ACTUAL NODE.
 var hasConvertedStupidNodePaths = false
+
+# This ensures that _process() will only start to do stuff
+# once we're done setting up the spring with points and stuff
+var doneSetup = false
 
 export (NodePath) var PointA
 export (NodePath) var PointB
 
-export (float) var stiffness = 1
+# stiffness and dampingFactor are both set by the squishyBody itself.
+var stiffness
+var dampingFactor # We multiply the velocity by this each frame, to prevent it from flying off to infinity
 
-# We multiply the velocity by this each frame, to slow it down over time
-export (float) var dampingFactor = 0.95
-
-# The force applied due to "gravity"
-export (Vector2) var gravityForce = Vector2(0, 50)
-
-var springName = "unknown"
+var springName = "unknown" # We'll set this to something later on to identify which spring it is
 
 # This is determined during the creation by the body, it's just how long the
 # spring would be if there were no external forces acting upon it
-var restLength = 0
+var restLength
 
-# How much force will be applied to the points, based on a bunch of spring things
-var forceProduced
+# How much force will be applied to the points, based on the stiffness, distance apart, etc
+var hookesForceProduced
 
 func convertStupidNodePaths():
+	# Change the |path to the node| to the node itself
 	PointA = get_node(PointA)
 	PointB = get_node(PointB)
+	
+	#print("Node paths converted to point nodes.")
 
+# warning-ignore:unused_argument
 func _process(delta):
-	if not hasConvertedStupidNodePaths: # check line 3
-		convertStupidNodePaths()
-		hasConvertedStupidNodePaths = true
-	
-	var springForce  = hookesLawToFindForce()
-	var dampingForce = findDampingForce()
-	
-	var totalForce:float = springForce + dampingForce
-	
-	# Used for finding the force to apply to PointA and PointB, respectively
-	var aMinusB = PointA.position - PointB.position
-	var bMinusA = PointB.position - PointA.position
-	
-	var aTowardsB = aMinusB.normalized()
-	var bTowardsA = bMinusA.normalized()
-	
-	# This is the force magnitude, multiplied by the
-	# normal vector between A and B
-	var forceOnPointA = totalForce * (aTowardsB)
-	var forceOnPointB = totalForce * (bTowardsA)
+	if doneSetup:
+		if not hasConvertedStupidNodePaths: # check line 3
+			convertStupidNodePaths()
+			hasConvertedStupidNodePaths = true
+		
+		var springForce  = hookesLawToFindForce()
+		var dampingForce = findDampingForce()
+		
+		var totalForce:float = springForce + dampingForce
+		
+		# Get the force vectors to apply to each point
+		var forceOnPointA = aimForceToOtherPoint(totalForce, PointA.position, PointB.position)
+		var forceOnPointB = aimForceToOtherPoint(totalForce, PointB.position, PointA.position)
+		
+		# Set the spring force applied to each point to the force we calculated
+		PointA.integrateForceFromOneSpring(forceOnPointA)
+		PointB.integrateForceFromOneSpring(forceOnPointB)
+		
+		updateLine()
 
-	forceOnPointA = fixVector(forceOnPointA)
-	forceOnPointB = fixVector(forceOnPointB)
+# Takes the amount of force as an argument and aims it towards
+# the points, from each other. This results in the points receiving 
+# the correct force, *in the correct direction*.
+func aimForceToOtherPoint(force:float, thisPointPos:Vector2, otherPointPos:Vector2):
+	# The vector pointing from this point to the other point
+	var fromThisToOther = (thisPointPos - otherPointPos).normalized()
 	
-	PointA.linear_velocity = forceOnPointA
-	PointB.linear_velocity = forceOnPointB
+	# The force we should apply, in the direction and with the power it should have
+	var forceToApply = force * fromThisToOther
 	
-	updateLine()
-	print(springName, " sf:", springForce, " dpf:", dampingForce, " Af: ", forceOnPointA, " Bf: ", forceOnPointB, " Av: ", PointA.linear_velocity, " Bv: ", PointB.linear_velocity)
-	var foo = 23
+	# Repair the weird ass vector nonsense that sometimes happens
+	var fixedForce:Vector2 = fixVector(forceToApply)
+	
+	# Limit the force so it at least waits a few seconds before exploding
+	if fixedForce.length() > 10:
+		fixedForce = fixedForce.normalized() * 10
+	
+	return fixedForce
 
-func fixVector( vec: Vector2 ) -> Vector2:
-	var x = round( vec.x * 1000 ) / 1000
+# Makes the vectors more normal, and rounds them to the nearest 1/1000th.
+# They would sometimes return strange values like -0, so this was made to fix that.
+func fixVector( vector: Vector2 ) -> Vector2:
+	var x = round( vector.x * 1000 ) / 1000
 	if x == -0: x = 0
 	
-	var y = round( vec.y * 1000 ) / 1000
+	var y = round( vector.y * 1000 ) / 1000
 	if y == -0: y = 0
+	
 	return Vector2(x,y)
-
-
 
 # Find the force that the spring is applying, based on things like stiffness and position
 func hookesLawToFindForce() -> float:
@@ -83,25 +96,24 @@ func hookesLawToFindForce() -> float:
 	
 	# The force it produces increases if the stiffness does, and also if
 	# it's proximity to it's resting length increases
-	forceProduced = stiffness * differenceToRestLength
+	hookesForceProduced = differenceToRestLength * stiffness
 	
-	return forceProduced
+	return hookesForceProduced
 
 func findDampingForce() -> float:
-	# The difference in position
-	var bMinusA = PointB.position - PointA.position
-	
-	# The direction from A to B with a length of 1
-	var normalizedDirectionVector = bMinusA.normalized()
+	# The vector pointing towards A from B with length 1
+	var normalizedDirection = (PointB.position - PointA.position).normalized()
 	
 	# Just the differnce in linear velocity between A and B
-	var velocityDifference = PointA.linear_velocity - PointB.linear_velocity
+	var velocityDifference = PointB.linear_velocity - PointA.linear_velocity
 	
 	# The dot product of the two vectors; if this is positive it will move the 
 	# points closer together, otherwise it will move them apart
-	var dotProduct = normalizedDirectionVector.dot(velocityDifference)
+	var dotProduct = normalizedDirection.dot(velocityDifference)
 	
-	return (dotProduct * dampingFactor)
+	dotProduct /= 50
+	
+	return -(dotProduct * dampingFactor)
 
 # Update the line graphic for each frame, to point from point A to B
 func updateLine():

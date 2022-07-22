@@ -6,7 +6,7 @@
 [node name="Node2D" type="Node2D"]
 
 [node name="RigidBody2D" parent="." instance=ExtResource( 2 )]
-position = Vector2( 301, 214 )
+position = Vector2( 959, 462 )
 
 [node name="RigidBody2D2" parent="." instance=ExtResource( 2 )]
 position = Vector2( 241, 208 )
@@ -14,6 +14,3 @@ position = Vector2( 241, 208 )
 [node name="Spring" parent="." instance=ExtResource( 1 )]
 PointA = NodePath("../RigidBody2D")
 PointB = NodePath("../RigidBody2D2")
-stiffness = 5.0
-restLength = 500.0
-dampingFactor = 0.1

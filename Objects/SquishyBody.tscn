@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Objects/PhysicsPoint.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Objects/Spring.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Objects/SquishyBody.gd" type="Script" id=3]
+
+[node name="SquishyBody" type="Node2D"]
+script = ExtResource( 3 )
+PhysicsPoint = ExtResource( 1 )
+PhysicsSpring = ExtResource( 2 )

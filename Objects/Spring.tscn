@@ -4,10 +4,8 @@
 
 [node name="Spring" type="Node2D"]
 script = ExtResource( 1 )
-stiffness = 30.0
-dampingFactor = 0.1
 
 [node name="Line2D" type="Line2D" parent="."]
 z_index = -1
-width = 1.0
+width = 3.0
 default_color = Color( 0.145098, 0.145098, 0.145098, 1 )
