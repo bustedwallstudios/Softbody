@@ -18,9 +18,11 @@ export (float) var pointRadius = 10
 
 # These will be applied to each spring as they are created
 export (float) var stiffness     = 4
-export (float) var dampingFactor = 4
+export (float) var dampingFactor = 5
 
 export (float) var mass = 1
+
+export (bool) var hideLines = false
 
 # Stores all the points in a 2d array
 var bodyPoints = []
@@ -97,7 +99,6 @@ func initiateSprings():
 					createSpring(x, y, x+1, y+1, "dd", diagPxBetweenPoints)
 
 func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, length:float):
-	
 	# Create a new spring and add it as a child
 	var spring = PhysicsSpring.instance()
 	add_child(spring)
@@ -112,6 +113,8 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, len
 	spring.dampingFactor = self.dampingFactor
 	
 	spring.springName = springName + "("+str(x)+","+str(y)+")" # Will look like "dd(3,6)".
+	
+	spring.hideLine = hideLines
 	
 	# We're done setting it up, so it can now start processing its physics and whatnot
 	spring.doneSetup = true

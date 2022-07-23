@@ -13,27 +13,30 @@ export (NodePath) var PointA
 export (NodePath) var PointB
 
 # stiffness and dampingFactor are both set by the squishyBody itself.
-var stiffness
-var dampingFactor # We multiply the velocity by this each frame, to prevent it from flying off to infinity
+var stiffness:float
+var dampingFactor:float # We multiply the velocity by this each frame, to prevent it from flying off to infinity
+
+var gravityVector:Vector2 = Vector2(0, 0)
 
 var springName = "unknown" # We'll set this to something later on to identify which spring it is
 
 # This is determined during the creation by the body, it's just how long the
 # spring would be if there were no external forces acting upon it
-var restLength
+var restLength:float
+
+# If this is true, we won't show the line
+var hideLine:bool
 
 # How much force will be applied to the points, based on the stiffness, distance apart, etc
-var hookesForceProduced
+var hookesForceProduced:float
 
 func convertStupidNodePaths():
 	# Change the |path to the node| to the node itself
 	PointA = get_node(PointA)
 	PointB = get_node(PointB)
-	
-	#print("Node paths converted to point nodes.")
 
 # warning-ignore:unused_argument
-func _process(delta):
+func _physics_process(delta):
 	if doneSetup:
 		if not hasConvertedStupidNodePaths: # check line 3
 			convertStupidNodePaths()
@@ -45,19 +48,28 @@ func _process(delta):
 		var totalForce:float = springForce + dampingForce
 		
 		# Get the force vectors to apply to each point
+		# They are just opposites, so we can calculate it once and then set the
+		# force on the other point to the inverse of the force on the first one.
 		var forceOnPointA = aimForceToOtherPoint(totalForce, PointA.position, PointB.position)
-		var forceOnPointB = aimForceToOtherPoint(totalForce, PointB.position, PointA.position)
+		var forceOnPointB = -forceOnPointA
+		
+		# Apply gravity to the points
+		forceOnPointA += gravityVector
+		forceOnPointB += gravityVector 
 		
 		# Set the spring force applied to each point to the force we calculated
-		PointA.integrateForceFromOneSpring(forceOnPointA)
-		PointB.integrateForceFromOneSpring(forceOnPointB)
+		#PointA.integrateForceFromOneSpring(forceOnPointA)
+		#PointB.integrateForceFromOneSpring(forceOnPointB)
+		
+		PointA.totalSpringForce += forceOnPointA
+		PointB.totalSpringForce += forceOnPointB
 		
 		updateLine()
 
 # Takes the amount of force as an argument and aims it towards
 # the points, from each other. This results in the points receiving 
 # the correct force, *in the correct direction*.
-func aimForceToOtherPoint(force:float, thisPointPos:Vector2, otherPointPos:Vector2):
+func aimForceToOtherPoint(force:float, thisPointPos:Vector2, otherPointPos:Vector2) -> Vector2:
 	# The vector pointing from this point to the other point
 	var fromThisToOther = (thisPointPos - otherPointPos).normalized()
 	
@@ -68,8 +80,8 @@ func aimForceToOtherPoint(force:float, thisPointPos:Vector2, otherPointPos:Vecto
 	var fixedForce:Vector2 = fixVector(forceToApply)
 	
 	# Limit the force so it at least waits a few seconds before exploding
-	if fixedForce.length() > 10:
-		fixedForce = fixedForce.normalized() * 10
+#	if fixedForce.length() > 1:
+#		fixedForce = fixedForce.normalized() * 1
 	
 	return fixedForce
 
@@ -115,8 +127,23 @@ func findDampingForce() -> float:
 	
 	return -(dotProduct * dampingFactor)
 
-# Update the line graphic for each frame, to point from point A to B
+# This will prevent the points this spring is connected to from getting too close to each other or too far.
+#func clampDistance():
+#	# For convience, so I don't have to keep grabbing these
+#	var posA:Vector2 = PointA.position
+#	var posB:Vector2 = PointB.position
+#
+#	var distApart:float = (posA - posB).length()
+#
+#	if distApart > self.restLength * 2:
+#		Point
+
+# Update the line graphic for each frame, to go from point A to B
 func updateLine():
-	$Line2D.clear_points()
-	$Line2D.add_point(PointA.position)
-	$Line2D.add_point(PointB.position)
+	if hideLine:
+		$Line2D.clear_points()
+		$Line2D.hide()
+	else:
+		$Line2D.clear_points()
+		$Line2D.add_point(PointA.position)
+		$Line2D.add_point(PointB.position)

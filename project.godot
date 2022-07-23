@@ -14,9 +14,17 @@ config/name="SoftbodyTest"
 run/main_scene="res://2dWorld.tscn"
 config/icon="res://icon.png"
 
+[debug]
+
+settings/fps/force_fps=60
+
 [physics]
 
 common/enable_pause_aware_picking=true
+2d/default_linear_damp=0.0
+2d/default_angular_damp=0.0
+3d/default_linear_damp=0.0
+3d/default_angular_damp=0.0
 
 [rendering]
 

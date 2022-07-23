@@ -3,11 +3,12 @@
 [ext_resource path="res://Objects/PhysicsPoint.gd" type="Script" id=1]
 
 [sub_resource type="CircleShape2D" id=1]
-radius = 10.198
 
 [node name="PhysicsPoint" type="RigidBody2D"]
-gravity_scale = 5.0
-continuous_cd = 2
+gravity_scale = 0.0
+continuous_cd = 1
+contacts_reported = 1
+contact_monitor = true
 can_sleep = false
 linear_damp = 0.0
 angular_damp = 0.0
@@ -19,4 +20,4 @@ shape = SubResource( 1 )
 [node name="Marker" type="Polygon2D" parent="."]
 texture_offset = Vector2( 11, 11 )
 texture_scale = Vector2( 3, 3 )
-polygon = PoolVector2Array( -10, 0, -7, -7, 0, -10, 7, -7, 10, 0, 7, 7, 0, 10, -7, 7 )
+polygon = PoolVector2Array( -5.00068, 8.67582, -7.0778, 7.08483, -8.65774, 5.00771, -9.67421, 2.62122, -10, 0, -9.67421, -2.61579, -8.66879, -4.96913, -7.06675, -7.11254, -5.02277, -8.67039, -2.59209, -9.67581, 0, -10, 2.56757, -9.65371, 4.98721, -8.65934, 7.05328, -7.09045, 8.67742, -5.01332, 9.67179, -2.61579, 10, 0, 9.66074, 2.58807, 8.66637, 4.99666, 7.08643, 7.08483, 5.02035, 8.67582, 2.60072, 9.69229, 0, 10, -2.5921, 9.67019 )
