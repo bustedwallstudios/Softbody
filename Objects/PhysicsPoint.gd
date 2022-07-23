@@ -15,19 +15,7 @@ func _ready():
 func _physics_process(delta):
 	self.linear_velocity += (totalSpringForce)/mass
 	
+	self.angular_velocity = 0
+	self.rotation_degrees = 0
+	
 	totalSpringForce = Vector2(0, 2)
-
-func integrateForceFromOneSpring(F:Vector2):
-	# Add the force to our velocity, but less force if the point is more massive
-	linear_velocity += (F)/mass
-	
-	# If the point's linear_velocity is high, but it hasn't moved since last frame,
-	# the linear_velocity is obviously wrong. Here, we set it to correctly reflect
-	# the actual speed of the point.
-	#if linear_velocity.length() > 400 and posLastFrame == position:
-	#	linear_velocity = Vector2(0, 0)
-	
-	#print(linear_velocity)
-	# Update this at the end of the function, so that next time we run through 
-	# it will be the place we were at LAST frame
-	posLastFrame = position

@@ -16,8 +16,6 @@ export (NodePath) var PointB
 var stiffness:float
 var dampingFactor:float # We multiply the velocity by this each frame, to prevent it from flying off to infinity
 
-var gravityVector:Vector2 = Vector2(0, 0)
-
 var springName = "unknown" # We'll set this to something later on to identify which spring it is
 
 # This is determined during the creation by the body, it's just how long the
@@ -53,14 +51,9 @@ func _physics_process(delta):
 		var forceOnPointA = aimForceToOtherPoint(totalForce, PointA.global_position, PointB.global_position)
 		var forceOnPointB = -forceOnPointA
 		
-		# Apply gravity to the points
-		forceOnPointA += gravityVector
-		forceOnPointB += gravityVector 
-		
 		# Set the spring force applied to each point to the force we calculated
-		#PointA.integrateForceFromOneSpring(forceOnPointA)
-		#PointB.integrateForceFromOneSpring(forceOnPointB)
-		
+		# This will be set by all the springs affecting the point, and THEN
+		# integrated into the point itself
 		PointA.totalSpringForce += forceOnPointA
 		PointB.totalSpringForce += forceOnPointB
 		
@@ -126,17 +119,6 @@ func findDampingForce() -> float:
 	dotProduct /= 50
 	
 	return -(dotProduct * dampingFactor)
-
-# This will prevent the points this spring is connected to from getting too close to each other or too far.
-#func clampDistance():
-#	# For convience, so I don't have to keep grabbing these
-#	var posA:Vector2 = PointA.position
-#	var posB:Vector2 = PointB.position
-#
-#	var distApart:float = (posA - posB).length()
-#
-#	if distApart > self.restLength * 2:
-#		Point
 
 # Update the line graphic for each frame, to go from point A to B
 func updateLine():
