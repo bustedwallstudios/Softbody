@@ -50,7 +50,7 @@ func _physics_process(delta):
 		# Get the force vectors to apply to each point
 		# They are just opposites, so we can calculate it once and then set the
 		# force on the other point to the inverse of the force on the first one.
-		var forceOnPointA = aimForceToOtherPoint(totalForce, PointA.position, PointB.position)
+		var forceOnPointA = aimForceToOtherPoint(totalForce, PointA.global_position, PointB.global_position)
 		var forceOnPointB = -forceOnPointA
 		
 		# Apply gravity to the points
@@ -100,7 +100,7 @@ func fixVector( vector: Vector2 ) -> Vector2:
 func hookesLawToFindForce() -> float:
 	
 	# The distance between them
-	var distBetweenPoints = (PointB.position - PointA.position).length()
+	var distBetweenPoints = (PointB.global_position - PointA.global_position).length()
 	
 	# The difference between its current length and its resting length
 	# If this is negative, it will push the points apart
@@ -114,7 +114,7 @@ func hookesLawToFindForce() -> float:
 
 func findDampingForce() -> float:
 	# The vector pointing towards A from B with length 1
-	var normalizedDirection = (PointB.position - PointA.position).normalized()
+	var normalizedDirection = (PointB.global_position - PointA.global_position).normalized()
 	
 	# Just the differnce in linear velocity between A and B
 	var velocityDifference = PointB.linear_velocity - PointA.linear_velocity

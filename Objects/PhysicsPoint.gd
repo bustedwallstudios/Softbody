@@ -15,7 +15,7 @@ func _ready():
 func _physics_process(delta):
 	self.linear_velocity += (totalSpringForce)/mass
 	
-	totalSpringForce = Vector2(0, 1)
+	totalSpringForce = Vector2(0, 2)
 
 func integrateForceFromOneSpring(F:Vector2):
 	# Add the force to our velocity, but less force if the point is more massive
