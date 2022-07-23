@@ -28,6 +28,11 @@ var hideLine:bool
 # How much force will be applied to the points, based on the stiffness, distance apart, etc
 var hookesForceProduced:float
 
+# If this is true, it will add on an extra calculation: pressure force.
+# This is set to true in the SquishyBall code only, and will take the pressure
+# (calculated by the SquishyBall) and apply it to each point.
+var isBall = false
+
 func _ready():
 	if hideLine:
 		$Line2D.clear_points()
@@ -62,6 +67,10 @@ func _physics_process(delta):
 		PointA.totalSpringForce += forceOnPointA
 		PointB.totalSpringForce += forceOnPointB
 		
+		# If this is a ball body, instead of a mesh-like square one
+		if isBall:
+			applyPressureForce()
+		
 		# If we are showing the lines, update them
 		if not hideLine:
 			updateLine()
@@ -79,10 +88,6 @@ func aimForceToOtherPoint(force:float, thisPointPos:Vector2, otherPointPos:Vecto
 	# Repair the weird ass vector nonsense that sometimes happens
 	var fixedForce:Vector2 = fixVector(forceToApply)
 	
-	# Limit the force so it at least waits a few seconds before exploding
-#	if fixedForce.length() > 1:
-#		fixedForce = fixedForce.normalized() * 1
-	
 	return fixedForce
 
 # Makes the vectors more normal, and rounds them to the nearest 1/1000th.
@@ -98,7 +103,6 @@ func fixVector( vector: Vector2 ) -> Vector2:
 
 # Find the force that the spring is applying, based on things like stiffness and position
 func hookesLawToFindForce() -> float:
-	
 	# The distance between them
 	var distBetweenPoints = (PointB.global_position - PointA.global_position).length()
 	
@@ -112,6 +116,9 @@ func hookesLawToFindForce() -> float:
 	
 	return hookesForceProduced
 
+# Calculates the force applied to the points in the opposite 
+# direction from the spring's force, to prevent the shape
+# from perpetually bouncing in place.
 func findDampingForce() -> float:
 	# The vector pointing towards A from B with length 1
 	var normalizedDirection = (PointA.global_position - PointB.global_position).normalized()
@@ -128,6 +135,9 @@ func findDampingForce() -> float:
 	dotProduct /= 50
 	
 	return dotProduct * dampingFactor
+
+func applyPressureForce():
+	var a = 0
 
 # Update the line graphic for each frame, to go from point A to B
 func updateLine():

@@ -19,7 +19,7 @@ export (float) var pointRadius = 10
 # These will be applied to each spring as they are created
 # Damping factor is only really useful if it is set to exactly the same thing as stiffness,
 # so I have removed the ability to control that from the node.
-export (float) var stiffness = 4
+export (float, 0, 15) var stiffness = 4
 var dampingFactor
 
 export (float) var mass = 1
