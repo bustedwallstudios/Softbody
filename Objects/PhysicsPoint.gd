@@ -3,19 +3,16 @@ extends RigidBody2D
 # Set by the spring every frame
 var totalSpringForce:Vector2
 
-# This is used by the spring to determine if the point has moved since last frame.
-# If it hasn't moved, no gravity will be applied, because it must be at rest.
-var posLastFrame:Vector2
-
-func _ready():
-	# We don't want it to be the same on the first frame, 
-	# so we just make it a little bit different
-	posLastFrame = position + Vector2(10, 10)
+var gravityForce:Vector2
 
 func _physics_process(delta):
+	# Add the force from the springs to this point, adjusting for mass
 	self.linear_velocity += (totalSpringForce)/mass
 	
+	# Prevent rotation, so the points cannot roll.
+	# This results in better friction.
 	self.angular_velocity = 0
 	self.rotation_degrees = 0
 	
-	totalSpringForce = Vector2(0, 2)
+	# In the meantime, do the gravity amount
+	totalSpringForce = gravityForce

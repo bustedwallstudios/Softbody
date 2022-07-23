@@ -8,8 +8,8 @@ export (PackedScene) var PhysicsPoint
 export (PackedScene) var PhysicsSpring
 
 # The amount of balls sideways and vertically 
-export (int) var width  = 10
-export (int) var height = 6
+export (int) var width  = 6
+export (int) var height = 10
 
 # This lets us control the "density" of the points within the shape
 export (int) var pxBetweenPoints = 40
@@ -17,30 +17,36 @@ export (int) var pxBetweenPoints = 40
 export (float) var pointRadius = 10
 
 # These will be applied to each spring as they are created
-export (float) var stiffness     = 4
-export (float) var dampingFactor = 5
+# Damping factor is only really useful if it is set to exactly the same thing as stiffness,
+# so I have removed the ability to control that from the node.
+export (float) var stiffness = 4
+var dampingFactor
 
 export (float) var mass = 1
 
-export (bool) var hideLines = false
+export (Vector2) var gravity = Vector2(0, 1)
 
-# Stores all the points in a 2d array
+export (bool) var showLines   = false
+export (bool) var showPoints  = false
+export (bool) var showPolygon = true
+
+# Stores all the points in a 2d array (Currently unused I think)
 var bodyPoints = []
 
-var perimeter # The amount of points around the perimeter of the shape
-
 func _ready():
-	# Create all the points that can fall and stuff for physics
+	# The body works the best if they are equal.
+	dampingFactor = stiffness
+	
+	if not showPolygon:
+		$Shape.hide()
+	
+	# Create and initiate all the points and springs.
 	initiatePoints()
 	initiateSprings()
-	
-	# This is the length of the perimeter of the shape, in points.
-	# It counts two sides, and then so as to not count the corner points twice, 
-	# subtracts two from the other two sides.
-	perimeter = (width * 2) + ((width-2) * 2)
 
-#func _process(delta):
-#	updateShape()
+func _process(delta):
+	if showPolygon:
+		refreshShapeArray()
 
 # Create the correct amount of rigidbodies for all the points,
 # and put them in the correct positions
@@ -62,10 +68,17 @@ func initiatePoints():
 			# Adjust the color to give the whole squishy body a nice rainbow across it
 			newPoint.get_node("Marker").color = Color.from_hsv((x + y) / (float(width) + float(height)), 1, 1)
 			
-			# These all need to be the same
+			# All the points need to have the same mass
 			newPoint.mass = mass
 			
+			# All the points need to have the same gravity also
+			newPoint.gravityForce = gravity
+			
 			add_child(newPoint)
+			
+			# If we are hiding the points, we hide the point.
+			if not showPoints:
+				newPoint.hide()
 			
 			# And add it to the array so we can easily remember which are which
 			bodyPoints[y].append(newPoint.get_path())
@@ -114,7 +127,36 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, len
 	
 	spring.springName = springName + "("+str(x)+","+str(y)+")" # Will look like "dd(3,6)".
 	
-	spring.hideLine = hideLines
+	# This will not display the lines connecting the points where the springs are.
+	spring.hideLine = !showLines
 	
 	# We're done setting it up, so it can now start processing its physics and whatnot
 	spring.doneSetup = true
+
+# Refreshes the Polygon2D that we use to represent the shape of the softbody,
+# which uses eldritch array positioning to get the right points and add them to
+# the array of positions.
+func refreshShapeArray():
+	var pointArray:PoolVector2Array
+	
+	for i in range(0, width):
+		pointArray.append(get_node(bodyPoints[0][i]).position)
+	
+	for i in range(0, height-2):
+		pointArray.append(get_node(bodyPoints[i+1][width-1]).position)
+	
+	var backwards = []
+	for i in range(0, width):
+		backwards.insert(0, i)
+	
+	for i in backwards:
+		pointArray.append(get_node(bodyPoints[height-1][i]).position)
+	
+	var cornerlessBackwards = []
+	for i in range(1, height-1):
+		cornerlessBackwards.insert(0, i)
+	
+	for i in cornerlessBackwards:
+		pointArray.append(get_node(bodyPoints[i][0]).position)
+	
+	$Shape.polygon = pointArray

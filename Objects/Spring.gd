@@ -28,6 +28,11 @@ var hideLine:bool
 # How much force will be applied to the points, based on the stiffness, distance apart, etc
 var hookesForceProduced:float
 
+func _ready():
+	if hideLine:
+		$Line2D.clear_points()
+		$Line2D.hide()
+
 func convertStupidNodePaths():
 	# Change the |path to the node| to the node itself
 	PointA = get_node(PointA)
@@ -57,7 +62,9 @@ func _physics_process(delta):
 		PointA.totalSpringForce += forceOnPointA
 		PointB.totalSpringForce += forceOnPointB
 		
-		updateLine()
+		# If we are showing the lines, update them
+		if not hideLine:
+			updateLine()
 
 # Takes the amount of force as an argument and aims it towards
 # the points, from each other. This results in the points receiving 
@@ -107,7 +114,7 @@ func hookesLawToFindForce() -> float:
 
 func findDampingForce() -> float:
 	# The vector pointing towards A from B with length 1
-	var normalizedDirection = (PointB.global_position - PointA.global_position).normalized()
+	var normalizedDirection = (PointA.global_position - PointB.global_position).normalized()
 	
 	# Just the differnce in linear velocity between A and B
 	var velocityDifference = PointB.linear_velocity - PointA.linear_velocity
@@ -116,16 +123,14 @@ func findDampingForce() -> float:
 	# points closer together, otherwise it will move them apart
 	var dotProduct = normalizedDirection.dot(velocityDifference)
 	
+	# It's WAY too big normally, so we shrink it to a reasonable amount.
+	# (50 is completely arbitrary)
 	dotProduct /= 50
 	
-	return -(dotProduct * dampingFactor)
+	return dotProduct * dampingFactor
 
 # Update the line graphic for each frame, to go from point A to B
 func updateLine():
-	if hideLine:
-		$Line2D.clear_points()
-		$Line2D.hide()
-	else:
-		$Line2D.clear_points()
-		$Line2D.add_point(PointA.position)
-		$Line2D.add_point(PointB.position)
+	$Line2D.clear_points()
+	$Line2D.add_point(PointA.position)
+	$Line2D.add_point(PointB.position)
