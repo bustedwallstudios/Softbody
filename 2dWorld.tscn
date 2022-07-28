@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Objects/SquishyBody.tscn" type="PackedScene" id=1]
 [ext_resource path="res://MiscScripts/Draggable2.gd" type="Script" id=2]
@@ -7,6 +7,9 @@
 
 [sub_resource type="RectangleShape2D" id=3]
 extents = Vector2( 119, 13 )
+
+[sub_resource type="RectangleShape2D" id=6]
+extents = Vector2( 602.5, 8.5111 )
 
 [sub_resource type="RectangleShape2D" id=4]
 extents = Vector2( 602.698, 8.5111 )
@@ -20,10 +23,10 @@ radius = 91.7878
 [sub_resource type="CircleShape2D" id=5]
 radius = 206.526
 
-[node name="Node2D" type="Node2D"]
+[node name="World" type="Node2D"]
 
 [node name="Camera" type="Camera2D" parent="."]
-position = Vector2( -4, -471 )
+position = Vector2( -4, -320 )
 current = true
 zoom = Vector2( 3, 3 )
 
@@ -46,31 +49,29 @@ color = Color( 0.384314, 0.384314, 0.384314, 1 )
 polygon = PoolVector2Array( -5.95, -0.225, 5.95, -0.225, 5.95, 1.075, -5.95, 1.075 )
 
 [node name="RotatingBeam" type="StaticBody2D" parent="World"]
-position = Vector2( -880, 14.0001 )
-rotation = 0.555015
-scale = Vector2( 1.093, 10.975 )
+position = Vector2( 2213, 5 )
+rotation = -1.5708
+scale = Vector2( 1, 5 )
 __meta__ = {
 "_edit_group_": true
 }
 
 [node name="GroundCollision" type="CollisionShape2D" parent="World/RotatingBeam"]
-position = Vector2( 56.2972, -4.48892 )
-shape = SubResource( 4 )
+position = Vector2( 56.5, -4.48877 )
+shape = SubResource( 6 )
 
 [node name="GroundShape" type="Polygon2D" parent="World/RotatingBeam"]
-position = Vector2( 0, -8.5 )
-scale = Vector2( 20, 20 )
-polygon = PoolVector2Array( -27.3505, -0.222937, 32.9121, -0.225021, 32.9261, 0.624512, -27.3366, 0.626595 )
+polygon = PoolVector2Array( -546, 3.99805, -546, -13.002, 659, -12.9976, 659, 4.00244 )
 
 [node name="RotatingBeam2" type="StaticBody2D" parent="World"]
-position = Vector2( 2079, -1265 )
-rotation = -0.205949
-scale = Vector2( 0.855, 3.251 )
+position = Vector2( 2149, -1758 )
+rotation = 2.68606
+scale = Vector2( 0.76, 3.251 )
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_group_": true
 }
-degreesPerFrame = 1.0
+degreesPerFrame = 0.0
 
 [node name="GroundCollision" type="CollisionShape2D" parent="World/RotatingBeam2"]
 position = Vector2( 56.2972, -4.48892 )
@@ -82,14 +83,14 @@ scale = Vector2( 20, 20 )
 polygon = PoolVector2Array( -27.2157, -0.289926, 32.9624, -0.241419, 32.9287, 0.677203, -27.2257, 0.947976 )
 
 [node name="RotatingBeam3" type="StaticBody2D" parent="World"]
-position = Vector2( 2267, -478 )
-rotation = -2.64243
-scale = Vector2( 0.855, 3.251 )
+position = Vector2( -1922, -96.0001 )
+rotation = -2.62323
+scale = Vector2( 2.716, 3.251 )
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_group_": true
 }
-degreesPerFrame = -1.0
+degreesPerFrame = 0.0
 
 [node name="GroundCollision" type="CollisionShape2D" parent="World/RotatingBeam3"]
 position = Vector2( 56.2972, -4.48892 )
@@ -101,7 +102,8 @@ scale = Vector2( 20, 20 )
 polygon = PoolVector2Array( -27.2157, -0.289926, 32.9624, -0.241419, 32.9287, 0.677203, -27.2257, 0.947976 )
 
 [node name="Beam" type="RigidBody2D" parent="World"]
-position = Vector2( 2087, -852 )
+position = Vector2( -3289, 436 )
+rotation = -0.527089
 mass = 20.0
 gravity_scale = 3.72
 can_sleep = false
@@ -121,7 +123,7 @@ scale = Vector2( 20, 20 )
 polygon = PoolVector2Array( -16.9075, -0.197987, 20.0952, -0.13546, 20.0282, 3.01541, -16.674, 2.99974 )
 
 [node name="Ball" type="RigidBody2D" parent="World"]
-position = Vector2( 1709, -1007 )
+position = Vector2( -506, 885 )
 input_pickable = true
 mass = 25.0
 gravity_scale = 5.0
@@ -142,7 +144,7 @@ scale = Vector2( 20, 20 )
 polygon = PoolVector2Array( -4.45, 1.625, -4.6, 0.425001, -4.45, -0.775, -4, -1.875, -3.25, -2.825, -2.3, -3.575, -1.2, -4.025, -0.0499992, -4.175, 1.2, -4.025, 2.3, -3.575, 3.25, -2.825, 3.56939, -2.47059, 4, -1.875, 4.45, -0.775, 4.6, 0.375, 4.45, 1.625, 4, 2.725, 3.25, 3.675, 2.3, 4.425, 1.2, 4.875, 0, 5.025, -1.15, 4.875, -2.3, 4.375, -3.25, 3.675, -4, 2.725 )
 
 [node name="BigBall" type="RigidBody2D" parent="World"]
-position = Vector2( 1588, -1572 )
+position = Vector2( -852, 1019 )
 input_pickable = true
 mass = 50.0
 gravity_scale = 5.0
@@ -163,13 +165,14 @@ scale = Vector2( 44.924, 44.925 )
 polygon = PoolVector2Array( -4.45, 1.625, -4.6, 0.425001, -4.45, -0.775, -4, -1.875, -3.25, -2.825, -2.3, -3.575, -1.2, -4.025, -0.0499992, -4.175, 1.2, -4.025, 2.3, -3.575, 3.25, -2.825, 3.56939, -2.47059, 4, -1.875, 4.45, -0.775, 4.6, 0.375, 4.45, 1.625, 4, 2.725, 3.25, 3.675, 2.3, 4.425, 1.2, 4.875, 0, 5.025, -1.15, 4.875, -2.3, 4.375, -3.25, 3.675, -4, 2.725 )
 
 [node name="SquishyBody" parent="." instance=ExtResource( 1 )]
-position = Vector2( -1496, 198 )
-width = 4
-height = 4
+position = Vector2( -1280, -1370 )
+height = 6
 pxBetweenPoints = 100
-pointRadius = 1.0
-stiffness = 15.0
-gravity = Vector2( 0, 9.705 )
+pointRadius = 21.467
+stiffness = 10.988
+gravity = Vector2( 0, 5.463 )
+showPoints = true
+showPolygon = false
 
 [connection signal="input_event" from="World/Ball" to="World/Ball" method="inputEvent"]
 [connection signal="input_event" from="World/BigBall" to="World/BigBall" method="inputEvent"]

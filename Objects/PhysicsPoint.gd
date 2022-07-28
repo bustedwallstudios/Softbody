@@ -5,6 +5,10 @@ var totalSpringForce:Vector2
 
 var gravityForce:Vector2
 
+# Set by the SquishyBall each frame, if this is part of a squishy ball
+# and not a box. Remains unused if not part of a ball.
+var pressure:float
+
 func _physics_process(delta):
 	# Add the force from the springs to this point, adjusting for mass
 	self.linear_velocity += (totalSpringForce)/mass

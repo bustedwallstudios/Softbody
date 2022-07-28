@@ -8,8 +8,8 @@ export (PackedScene) var PhysicsPoint
 export (PackedScene) var PhysicsSpring
 
 # The amount of balls sideways and vertically 
-export (int) var width  = 6
-export (int) var height = 10
+export (int, 1, 100) var width  = 6
+export (int, 1, 100) var height = 10
 
 # This lets us control the "density" of the points within the shape
 export (int) var pxBetweenPoints = 40
@@ -26,7 +26,7 @@ export (float) var mass = 1
 
 export (Vector2) var gravity = Vector2(0, 1)
 
-export (bool) var showLines   = false
+export (bool) var showLines   = true
 export (bool) var showPoints  = false
 export (bool) var showPolygon = true
 
@@ -44,7 +44,7 @@ func _ready():
 	initiatePoints()
 	initiateSprings()
 
-func _process(delta):
+func _physics_process(delta):
 	if showPolygon:
 		refreshShapeArray()
 
@@ -138,25 +138,40 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, len
 # the array of positions.
 func refreshShapeArray():
 	var pointArray:PoolVector2Array
+	var colorArray:PoolColorArray
+	
+	var currentNode:RigidBody2D
 	
 	for i in range(0, width):
-		pointArray.append(get_node(bodyPoints[0][i]).position)
+		currentNode = get_node(bodyPoints[0][i])
+		pointArray.append(currentNode.position)
+		colorArray.append(markerColor(currentNode))
 	
 	for i in range(0, height-2):
-		pointArray.append(get_node(bodyPoints[i+1][width-1]).position)
+		currentNode = get_node(bodyPoints[i+1][width-1])
+		pointArray.append(currentNode.position)
+		colorArray.append(markerColor(currentNode))
 	
 	var backwards = []
 	for i in range(0, width):
 		backwards.insert(0, i)
 	
 	for i in backwards:
-		pointArray.append(get_node(bodyPoints[height-1][i]).position)
+		currentNode = get_node(bodyPoints[height-1][i])
+		pointArray.append(currentNode.position)
+		colorArray.append(markerColor(currentNode))
 	
 	var cornerlessBackwards = []
 	for i in range(1, height-1):
 		cornerlessBackwards.insert(0, i)
 	
 	for i in cornerlessBackwards:
-		pointArray.append(get_node(bodyPoints[i][0]).position)
+		currentNode = get_node(bodyPoints[i][0])
+		pointArray.append(currentNode.position)
+		colorArray.append(markerColor(currentNode))
 	
 	$Shape.polygon = pointArray
+	$Shape.vertex_colors = colorArray
+
+func markerColor(node:RigidBody2D):
+	return node.get_node("Marker").color

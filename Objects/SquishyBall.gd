@@ -8,10 +8,10 @@ export (PackedScene) var PhysicsPoint
 export (PackedScene) var PhysicsSpring
 
 # The amount of pixels away from the center each vertex will be
-export (int) var radiusInPx         = 100
+export (int) var radiusInPx = 100
 
 # The amount of vertices around the circle (3 makes it a triangle, 4 a square, etc.)
-export (int) var pointsAroundCircle = 10
+export (int, 3, 100) var pointsAroundCircle = 10
 var pxBetweenPoints # The amount of pixels between each point (we have to calculate this in _ready()
 
 export (float) var pointRadius = 10
@@ -19,7 +19,7 @@ export (float) var pointRadius = 10
 # These will be applied to each spring as they are created
 # Damping factor is only really useful if it is set to exactly the same thing as stiffness,
 # so I have removed the ability to control that from the node.
-export (float) var stiffness = 4
+export (float, 0, 15) var stiffness = 10
 var dampingFactor
 
 export (float) var mass = 1
@@ -36,8 +36,12 @@ var bodyPoints = []
 # PRESSURE RELATED STUFF
 var p:float # Pressure: Calculated each frame
 var V:float # Volume: Calculated each frame
-export (float) var n = 100  # Amount of substance: constant (This can be increased by the user to 
+"""Desc"""
+var n # Amount of substance within the ball: constant (calculated in _ready()
 const R:float = 8.31446261815324 # Ideal gas constant: constant (obviously)
+
+# The pressure is literally just multiplied by this during the calculation
+export (float) var pressureFactor = 1
 
 # The formula to calculate pressure is PV = nRT, but T is temp (we don't care
 # about that), and all we actually need is pressure. Thus, we rearrange the
@@ -47,8 +51,12 @@ const R:float = 8.31446261815324 # Ideal gas constant: constant (obviously)
 
 
 func _ready():
-	# The body works the best if they are equal.
+	# The ball works best if it's a little more dampened (since there are only 
+	# 2 springs on each point)
 	dampingFactor = stiffness
+	
+	# n is the area of the shape in pixels
+	n = radiusInPx * 10000
 	
 	# This will equal the circumference of the circle / the point count.
 	pxBetweenPoints = radiusInPx*2 * PI / pointsAroundCircle
@@ -60,9 +68,16 @@ func _ready():
 	initiatePoints()
 	initiateSprings()
 
-func _process(delta):
+func _physics_process(delta):
 	if showPolygon:
 		refreshShapeArray()
+	
+	# Calculate the area (volume) of the shape this frame
+	V = calculateArea()
+	
+	# Calculate the pressure using a simplified version of the Ideal Gas Law:
+	# https://en.wikipedia.org/wiki/Ideal_gas_law
+	p = n*R/V
 
 # Create the correct amount of rigidbodies for all the points,
 # and put them in the correct positions
@@ -92,7 +107,8 @@ func initiatePoints():
 		newPoint.get_node("Marker").scale = Vector2(pointRadius/10, pointRadius/10)
 		
 		# Adjust the color to give the whole squishy body a nice rainbow across it
-		newPoint.get_node("Marker").color = Color.from_hsv(pointIdx/pointsAroundCircle, 1, 1)
+		# We have to multiply it by 1.0 to prevent it from rounding to 0 no matter what -_-
+		newPoint.get_node("Marker").color = Color.from_hsv((pointIdx*1.0)/(pointsAroundCircle *1.0), 1, 1)
 		
 		# All the points need to have the same mass
 		newPoint.mass = mass
@@ -138,6 +154,10 @@ func createSpring(idx:int, targetIdx:int, springName:String, length:float):
 	spring.restLength    = length
 	spring.stiffness     = self.stiffness
 	spring.dampingFactor = self.dampingFactor
+	spring.pressureFactor = pressureFactor
+	
+	# This is the squishy ball, so the spring has to adjust the forces according to that
+	spring.isBall = true
 	
 	# Mostly for debugging
 	spring.springName = springName
@@ -148,9 +168,44 @@ func createSpring(idx:int, targetIdx:int, springName:String, length:float):
 	# We're done setting it up, so it can now start processing its physics and whatnot
 	spring.doneSetup = true
 
-# Refreshes the Polygon2D that we use to represent the shape of the softbody,
-# which uses eldritch array positioning to get the right points and add them to
-# the array of positions.
+func calculateArea():
+	# The running total of all our calculations
+	var total = 0
+	
+	# The index of the first and second points
+	var p1
+	var p2
+	
+	# For every point in the body
+	for i in range(0, pointsAroundCircle):
+		# We get the index of point 1 and point 2
+		p1 = i
+		p2 = p1 + 1
+		
+		# If p1 is the LAST point, the index of the second point should be 0
+		# This reconnects the polygon at the end
+		if p1 == pointsAroundCircle-1:
+			p2 = 0
+		
+		# Get the x and y positions of the points in question
+		var x1 = get_node(bodyPoints[p1]).position.x
+		var y1 = get_node(bodyPoints[p1]).position.y
+		
+		var x2 = get_node(bodyPoints[p2]).position.x
+		var y2 = get_node(bodyPoints[p2]).position.y
+		
+		var result = x1*y2 - y1*x2
+		
+		total += result
+	
+	# Divide the absolute value of the total by 2, and we have our area.
+	total = abs(total/2)
+	
+	return total
+
+# Refreshes the Polygon2D that we use to represent the shape of the softbody.
+# This simply iterates through each point and adds it to the polygon in order.
+# Very convenient to have that bodyPoints[] array.
 func refreshShapeArray():
 	var pointArray:PoolVector2Array
 	

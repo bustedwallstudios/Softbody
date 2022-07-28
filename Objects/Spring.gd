@@ -32,6 +32,7 @@ var hookesForceProduced:float
 # This is set to true in the SquishyBall code only, and will take the pressure
 # (calculated by the SquishyBall) and apply it to each point.
 var isBall = false
+var pressureFactor:float
 
 func _ready():
 	if hideLine:
@@ -61,15 +62,18 @@ func _physics_process(delta):
 		var forceOnPointA = aimForceToOtherPoint(totalForce, PointA.global_position, PointB.global_position)
 		var forceOnPointB = -forceOnPointA
 		
+		# If this is a ball body, instead of a mesh-like square one
+		if isBall:
+			var pressureForce = findPressureForce()
+			
+			forceOnPointA += pressureForce * pressureFactor
+			forceOnPointB += pressureForce * pressureFactor
+		
 		# Set the spring force applied to each point to the force we calculated
 		# This will be set by all the springs affecting the point, and THEN
 		# integrated into the point itself
 		PointA.totalSpringForce += forceOnPointA
 		PointB.totalSpringForce += forceOnPointB
-		
-		# If this is a ball body, instead of a mesh-like square one
-		if isBall:
-			applyPressureForce()
 		
 		# If we are showing the lines, update them
 		if not hideLine:
@@ -102,7 +106,7 @@ func fixVector( vector: Vector2 ) -> Vector2:
 	return Vector2(x,y)
 
 # Find the force that the spring is applying, based on things like stiffness and position
-func hookesLawToFindForce() -> float:
+func hookesLawToFindForce() -> float:  
 	# The distance between them
 	var distBetweenPoints = (PointB.global_position - PointA.global_position).length()
 	
@@ -136,8 +140,22 @@ func findDampingForce() -> float:
 	
 	return dotProduct * dampingFactor
 
-func applyPressureForce():
-	var a = 0
+func findPressureForce():
+	# Get the pressure from the squishyball
+	var pressure:float = PointA.get_parent().p
+	
+	# Get the vector pointing from A to B
+	var vectorBetweenPoints = PointB.global_position-PointA.global_position
+	
+	# Scale the vector between the points to the correct pressure, still pointing
+	# from one point to the other
+	var vecBetweenScaled = vectorBetweenPoints.normalized() * pressure
+	
+	var forceToApply = Vector2(vecBetweenScaled.y, -vecBetweenScaled.x) / dampingFactor
+	
+	forceToApply
+	
+	return forceToApply
 
 # Update the line graphic for each frame, to go from point A to B
 func updateLine():

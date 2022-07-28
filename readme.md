@@ -27,7 +27,7 @@ The higher the stiffness is, the more force will be applied to the points as the
 
 Keep in mind: <span style="color:red">**this is the most volatile parameter.**</span> The simulation will remain stable if `dampingFactor >= stiffness`, but if that isn't true, the body will immediately start to jiggle so hard it will send you flying into the next dimension, and then dissolve into infinity. <span style="color:pink">**Maintaing a stiffness below 50**</span> is highly advisable; even if you also keep the damping factor at 50 it will still vibrate weirdly.
 
-### **Damping Factor**
+### **Damping Factor** (No longer adjustable in editor)
 The amount of dampening that is applied to the spring's force each frame.
 
 This is essentially the Yin to stiffness' Yang. It decreases the force the spring applies each frame, based on how fast it is changing in length. For example, if the points are moving apart quickly, and the spring is applying force to move them back, a large amount of damping will be applied to prevent them from flying off too much.
