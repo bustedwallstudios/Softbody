@@ -1,5 +1,7 @@
 extends Node2D
 
+# P = NRT / V, F = P * A // 3D
+# P = NRT / A, F = P * L // 2D
 
 # This allows us to create the rigidbodies whenever we need to
 export (PackedScene) var PhysicsPoint
@@ -36,7 +38,7 @@ var bodyPoints = []
 # PRESSURE RELATED STUFF
 var p:float # Pressure: Calculated each frame
 var V:float # Volume: Calculated each frame
-"""Desc"""
+
 var n # Amount of substance within the ball: constant (calculated in _ready()
 const R:float = 8.31446261815324 # Ideal gas constant: constant (obviously)
 

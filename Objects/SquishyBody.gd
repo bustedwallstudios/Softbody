@@ -28,7 +28,8 @@ export (Vector2) var gravity = Vector2(0, 1)
 
 export (bool) var showLines   = true
 export (bool) var showPoints  = false
-export (bool) var showPolygon = true
+export (bool) var showPolygon = false
+export (bool) var showOutline = true
 
 # Stores all the points in a 2d array (Currently unused I think)
 var bodyPoints = []
@@ -46,7 +47,11 @@ func _ready():
 
 func _physics_process(delta):
 	if showPolygon:
-		refreshShapeArray()
+		$Shape.polygon = getOutlineArray()
+	
+	if showOutline:
+		$Outline.points = getOutlineArray()
+
 
 # Create the correct amount of rigidbodies for all the points,
 # and put them in the correct positions
@@ -133,10 +138,10 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, len
 	# We're done setting it up, so it can now start processing its physics and whatnot
 	spring.doneSetup = true
 
-# Refreshes the Polygon2D that we use to represent the shape of the softbody,
+# Refreshes the Polygon2D or Line2D that we use to represent the shape of the softbody,
 # which uses eldritch array positioning to get the right points and add them to
 # the array of positions.
-func refreshShapeArray():
+func getOutlineArray():
 	var pointArray:PoolVector2Array
 	var colorArray:PoolColorArray
 	
@@ -170,8 +175,11 @@ func refreshShapeArray():
 		pointArray.append(currentNode.position)
 		colorArray.append(markerColor(currentNode))
 	
-	$Shape.polygon = pointArray
-	$Shape.vertex_colors = colorArray
+	# Append the top right point again, to connect the outline back to itself.
+	# This will fix the outline, and will have no effect on the Polygon2D.
+	pointArray.append(get_node(bodyPoints[0][0]).position)
+	
+	return(pointArray)
 
 func markerColor(node:RigidBody2D):
 	return node.get_node("Marker").color

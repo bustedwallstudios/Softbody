@@ -64,7 +64,7 @@ func _physics_process(delta):
 		
 		# If this is a ball body, instead of a mesh-like square one
 		if isBall:
-			var pressureForce = findPressureForce()
+			var pressureForce = findPressureForceVector()
 			
 			forceOnPointA += pressureForce * pressureFactor
 			forceOnPointB += pressureForce * pressureFactor
@@ -140,22 +140,26 @@ func findDampingForce() -> float:
 	
 	return dotProduct * dampingFactor
 
-func findPressureForce():
+func findPressureForceVector():
 	# Get the pressure from the squishyball
 	var pressure:float = PointA.get_parent().p
 	
 	# Get the vector pointing from A to B
-	var vectorBetweenPoints = PointB.global_position-PointA.global_position
+	var vectorBetweenPoints:Vector2 = PointB.global_position - PointA.global_position
 	
-	# Scale the vector between the points to the correct pressure, still pointing
-	# from one point to the other
-	var vecBetweenScaled = vectorBetweenPoints.normalized() * pressure
+	# (x, y) is the vector pointing from one of the points toward the other.
+	# Here, we create a new vector, which is (y, -x). This is the old vector
+	# rotated by 90 degrees, so as to push the points outwards.
 	
-	var forceToApply = Vector2(vecBetweenScaled.y, -vecBetweenScaled.x) / dampingFactor
+	# Force = P * L, where P is the pressure and L is the length of the spring.
+	var force:float = pressure * (vectorBetweenPoints.length())
 	
-	forceToApply
+	# This is the force that we apply to the points in 2D.
+	# It is the force * the normalized distance between the points,
+	# rotated to points outwards.
+	var forceVector = vectorBetweenPoints.rotated(-PI/2) * force
 	
-	return forceToApply
+	return forceVector
 
 # Update the line graphic for each frame, to go from point A to B
 func updateLine():
