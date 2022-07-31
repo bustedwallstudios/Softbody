@@ -55,11 +55,11 @@ func _physics_process(delta):
 			hasConvertedStupidNodePaths = true
 		
 		# Set the global variable for the distance between point A and B
-		# This is used in hookesLawToFindForce() and findPressureForceVector()
+		# This is used in hookesLawToFindForce() and findPressureForce()
 		currentLength = (PointB.global_position - PointA.global_position).length()
 		
-		var springForce  = hookesLawToFindForce()
-		var dampingForce = findDampingForce()
+		var springForce:float  = hookesLawToFindForce()
+		var dampingForce:float = findDampingForce()
 		
 		var totalForce:float = springForce + dampingForce
 		
@@ -69,12 +69,32 @@ func _physics_process(delta):
 		var forceOnPointA = aimForceToOtherPoint(totalForce, PointA.global_position, PointB.global_position)
 		var forceOnPointB = -forceOnPointA
 		
-		# If this is a ball body, instead of a mesh-like square one
+		# If this is a ball body, instead of a mesh-like square one, we'll do the calculations
+		# to figure out the pressure-based forces.
 		if isBall:
-			var pressureForce = findPressureForceVector()
+			# The AMOUNT of pressure that we will apply to the points
+			var pressureForce:float = findPressureForce() * pressureFactor
 			
-			forceOnPointA += pressureForce * pressureFactor
-			forceOnPointB += pressureForce * pressureFactor
+			# The damping we will apply to the points to prevent them from flying off into infinity
+			PointA.linear_damp = 0
+			PointB.linear_damp = 0
+			
+			# The amount of pressure for each specific point, as their damping will be different
+			var pressureForceOnA = pressureForce
+			var pressureForceOnB = pressureForce
+			
+			# The direction we are to apply the force in is perpendicular to the spring,
+			# pointing outwards. This will push them both away from the center of the ball,
+			# forcing it to keep its shape.
+			# This should be normalized, so that we can multiply it by the pressureForceOnX
+			# variables to get it to point in the right direction AND have the right magnitude,
+			# and we ensure that it is of length 1 by passing in 1 to the function.
+			var forceDirection:Vector2 = aimForceToOtherPoint(1, PointA.global_position, PointB.global_position).rotated(PI/2)
+			
+			# Add the pressure force vector to the force that we will ultimately apply to
+			# each point.
+			forceOnPointA += forceDirection * pressureForceOnA
+			forceOnPointB += forceDirection * pressureForceOnB
 		
 		# Set the spring force applied to each point to the force we calculated
 		# This will be set by all the springs affecting the point, and THEN
@@ -129,10 +149,10 @@ func hookesLawToFindForce() -> float:
 # from perpetually bouncing in place.
 func findDampingForce() -> float:
 	# The vector pointing towards A from B with length 1
-	var normalizedDirection = (PointA.global_position - PointB.global_position).normalized()
+	var normalizedDirection:Vector2 = (PointA.global_position - PointB.global_position).normalized()
 	
 	# Just the difference in linear velocity between A and B
-	var velocityDifference = PointB.linear_velocity - PointA.linear_velocity
+	var velocityDifference:Vector2 = PointB.linear_velocity - PointA.linear_velocity
 	
 	# The dot product of the two vectors; if this is positive it will move the 
 	# points closer together, otherwise it will move them apart
@@ -144,7 +164,25 @@ func findDampingForce() -> float:
 	
 	return dotProduct * dampingFactor
 
-func findPressureForceVector():
+func findPressureDamping(point) -> float:
+	# The vector pointing backwards relative to the direction the
+	# point is moving in with length 1
+	var normalizedDirection = point.linear_velocity.normalized().rotated(-PI)
+	
+	# Just the difference in linear velocity between the point's speed and 0
+	var speed = point.linear_velocity
+	
+	# The dot product of the two vectors; if this is positive it will move the 
+	# points closer together, otherwise it will move them apart
+	var dotProduct = normalizedDirection.dot(speed)
+	
+	# It's WAY too big normally, so we shrink it to a reasonable amount.
+	# (50 is completely arbitrary)
+	dotProduct /= 50
+	
+	return dotProduct * dampingFactor
+
+func findPressureForce() -> float:
 	# Get the pressure from the squishyball
 	var pressure:float = PointA.get_parent().p
 	
@@ -154,12 +192,7 @@ func findPressureForceVector():
 	# Force = P * L, where P is the pressure and L is the length of the spring.
 	var force:float = pressure * (vectorBetweenPoints.length())
 	
-	# This is the force that we apply to the points in 2D.
-	# It is the force * the normalized distance between the points,
-	# rotated to points outwards.
-	var forceVector = vectorBetweenPoints.rotated(-PI/2) * force
-	
-	return forceVector
+	return force
 
 # Update the line graphic for each frame, to go from point A to B
 func updateLine():
