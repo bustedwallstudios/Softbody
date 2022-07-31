@@ -15,4 +15,8 @@ color = Color( 0, 1, 0, 1 )
 
 [node name="Outline" type="Line2D" parent="."]
 z_index = 1
+width = 20.0
 default_color = Color( 0.4, 0.501961, 1, 1 )
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2

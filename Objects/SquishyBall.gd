@@ -55,7 +55,7 @@ export (float) var pressureFactor = 1
 func _ready():
 	# The ball works best if it's a little more dampened (since there are only 
 	# 2 springs on each point)
-	dampingFactor = stiffness
+	dampingFactor = stiffness * 1.5
 	
 	# n is the area of the shape in pixels
 	n = radiusInPx * 10000
@@ -132,11 +132,12 @@ func initiateSprings():
 	for i in range(0, pointsAroundCircle):
 		
 		# If we're on the last point, we want the spring to connect
-		# to the last point and the first one, to complete the circle.
+		# to the last point and the first one, to complete the circle. (2nd argument)
 		if i == pointsAroundCircle-1:
+			# Create a spring attached to the current and FIRST points
 			createSpring(i, 0, str(i), pxBetweenPoints)
 		# In any other case though, we just connect
-		# it to the next point in the circle.
+		# it to the next point in the circle. (2nd argument)
 		else:
 			# Create a spring attached to the current and next points
 			createSpring(i, i+1, str(i), pxBetweenPoints)

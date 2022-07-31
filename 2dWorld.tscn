@@ -49,8 +49,8 @@ color = Color( 0.384314, 0.384314, 0.384314, 1 )
 polygon = PoolVector2Array( -5.95, -0.225, 5.95, -0.225, 5.95, 1.075, -5.95, 1.075 )
 
 [node name="RotatingBeam" type="StaticBody2D" parent="World"]
-position = Vector2( 2213, 5 )
-rotation = -1.5708
+position = Vector2( -598, 272 )
+rotation = -2.48186
 scale = Vector2( 1, 5 )
 __meta__ = {
 "_edit_group_": true
@@ -64,9 +64,9 @@ shape = SubResource( 6 )
 polygon = PoolVector2Array( -546, 3.99805, -546, -13.002, 659, -12.9976, 659, 4.00244 )
 
 [node name="RotatingBeam2" type="StaticBody2D" parent="World"]
-position = Vector2( 634, -161 )
-rotation = 2.13977
-scale = Vector2( 1.411, 3.251 )
+position = Vector2( 348, -357 )
+rotation = 2.33874
+scale = Vector2( 1.016, 3.251 )
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_group_": true
@@ -83,9 +83,9 @@ scale = Vector2( 20, 20 )
 polygon = PoolVector2Array( -27.2157, -0.289926, 32.9624, -0.241419, 32.9287, 0.677203, -27.2257, 0.947976 )
 
 [node name="RotatingBeam3" type="StaticBody2D" parent="World"]
-position = Vector2( -1922, -96.0001 )
-rotation = -2.62323
-scale = Vector2( 2.716, 3.251 )
+position = Vector2( -903, -1263 )
+rotation = -2.34921
+scale = Vector2( 1.237, 3.251 )
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_group_": true
@@ -102,7 +102,7 @@ scale = Vector2( 20, 20 )
 polygon = PoolVector2Array( -27.2157, -0.289926, 32.9624, -0.241419, 32.9287, 0.677203, -27.2257, 0.947976 )
 
 [node name="Beam" type="RigidBody2D" parent="World"]
-position = Vector2( -3289, 436 )
+position = Vector2( -2016, 136 )
 rotation = -0.527089
 mass = 20.0
 gravity_scale = 3.72
@@ -123,7 +123,7 @@ scale = Vector2( 20, 20 )
 polygon = PoolVector2Array( -16.9075, -0.197987, 20.0952, -0.13546, 20.0282, 3.01541, -16.674, 2.99974 )
 
 [node name="Ball" type="RigidBody2D" parent="World"]
-position = Vector2( -506, 885 )
+position = Vector2( -959, 359 )
 input_pickable = true
 mass = 25.0
 gravity_scale = 5.0
@@ -144,7 +144,7 @@ scale = Vector2( 20, 20 )
 polygon = PoolVector2Array( -4.45, 1.625, -4.6, 0.425001, -4.45, -0.775, -4, -1.875, -3.25, -2.825, -2.3, -3.575, -1.2, -4.025, -0.0499992, -4.175, 1.2, -4.025, 2.3, -3.575, 3.25, -2.825, 3.56939, -2.47059, 4, -1.875, 4.45, -0.775, 4.6, 0.375, 4.45, 1.625, 4, 2.725, 3.25, 3.675, 2.3, 4.425, 1.2, 4.875, 0, 5.025, -1.15, 4.875, -2.3, 4.375, -3.25, 3.675, -4, 2.725 )
 
 [node name="BigBall" type="RigidBody2D" parent="World"]
-position = Vector2( -852, 1019 )
+position = Vector2( -1542, 289 )
 input_pickable = true
 mass = 50.0
 gravity_scale = 5.0
@@ -165,15 +165,22 @@ scale = Vector2( 44.924, 44.925 )
 polygon = PoolVector2Array( -4.45, 1.625, -4.6, 0.425001, -4.45, -0.775, -4, -1.875, -3.25, -2.825, -2.3, -3.575, -1.2, -4.025, -0.0499992, -4.175, 1.2, -4.025, 2.3, -3.575, 3.25, -2.825, 3.56939, -2.47059, 4, -1.875, 4.45, -0.775, 4.6, 0.375, 4.45, 1.625, 4, 2.725, 3.25, 3.675, 2.3, 4.425, 1.2, 4.875, 0, 5.025, -1.15, 4.875, -2.3, 4.375, -3.25, 3.675, -4, 2.725 )
 
 [node name="SquishyBody" parent="." instance=ExtResource( 1 )]
-position = Vector2( -2347, -2181 )
-width = 5
-height = 5
-pxBetweenPoints = 200
-pointRadius = 5.0
-stiffness = 10.0
-gravity = Vector2( 0, 40 )
+position = Vector2( -1047, -2045 )
+pointsHoriz = 2
+pointsVert = 2
+sizeInPx = 200
+stiffness = 15.0
+gravity = Vector2( 0, 6 )
 showLines = false
-showPoints = true
+
+[node name="SquishyBody2" parent="." instance=ExtResource( 1 )]
+position = Vector2( -939, -2014 )
+pointsHoriz = 2
+pointsVert = 2
+sizeInPx = 200
+stiffness = 15.0
+gravity = Vector2( 0, 6 )
+showLines = false
 
 [connection signal="input_event" from="World/Ball" to="World/Ball" method="inputEvent"]
 [connection signal="input_event" from="World/BigBall" to="World/BigBall" method="inputEvent"]

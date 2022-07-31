@@ -8,23 +8,26 @@ export (PackedScene) var PhysicsPoint
 export (PackedScene) var PhysicsSpring
 
 # The amount of balls sideways and vertically 
-export (int, 1, 100) var width  = 6
-export (int, 1, 100) var height = 10
+export (int, 1, 100) var pointsHoriz  = 6
+export (int, 1, 100) var pointsVert = 10
 
-# This lets us control the "density" of the points within the shape
-export (int) var pxBetweenPoints = 40
+export (int) var sizeInPx = 300
+
+# This is set in _ready(), and is calculated by dividing the total size of the shape by 
+# how many points there are across it.
+var pxBetweenPoints:float
 
 export (float) var pointRadius = 10
 
 # These will be applied to each spring as they are created
 # Damping factor is only really useful if it is set to exactly the same thing as stiffness,
 # so I have removed the ability to control that from the node.
-export (float, 0, 15) var stiffness = 4
+export (float, 0, 15) var stiffness = 8
 var dampingFactor
 
 export (float) var mass = 1
 
-export (Vector2) var gravity = Vector2(0, 1)
+export (Vector2) var gravity = Vector2(0, 3)
 
 export (bool) var showLines   = true
 export (bool) var showPoints  = false
@@ -38,6 +41,8 @@ func _ready():
 	# The body works the best if they are equal.
 	dampingFactor = stiffness
 	
+	pxBetweenPoints = sizeInPx/pointsHoriz
+	
 	if not showPolygon:
 		$Shape.hide()
 	
@@ -45,6 +50,7 @@ func _ready():
 	initiatePoints()
 	initiateSprings()
 
+# warning-ignore:unused_argument
 func _physics_process(delta):
 	if showPolygon:
 		$Shape.polygon = getOutlineArray()
@@ -56,10 +62,10 @@ func _physics_process(delta):
 # Create the correct amount of rigidbodies for all the points,
 # and put them in the correct positions
 func initiatePoints():
-	for y in height:
+	for y in pointsVert:
 		bodyPoints.append([]) # Add another layer
 		
-		for x in width:
+		for x in pointsHoriz:
 			# Initiate a new one in memory
 			var newPoint = PhysicsPoint.instance()
 			
@@ -71,7 +77,7 @@ func initiatePoints():
 			newPoint.get_node("Marker").scale = Vector2(pointRadius/10, pointRadius/10)
 			
 			# Adjust the color to give the whole squishy body a nice rainbow across it
-			newPoint.get_node("Marker").color = Color.from_hsv((x + y) / (float(width) + float(height)), 1, 1)
+			newPoint.get_node("Marker").color = Color.from_hsv((x + y) / (float(pointsHoriz) + float(pointsVert)), 1, 1)
 			
 			# All the points need to have the same mass
 			newPoint.mass = mass
@@ -92,15 +98,13 @@ func initiateSprings():
 	# Thank you Pythagoras
 	var diagPxBetweenPoints = sqrt((pxBetweenPoints * pxBetweenPoints) + (pxBetweenPoints * pxBetweenPoints))
 	
-	for y in height:
-		for x in width:
-			var currentPoint = bodyPoints[y][x]
-		
+	for y in pointsVert:
+		for x in pointsHoriz:
 			# These if statements only allow the springs to be created
 			# that will fit in the body, for example it will only create a spring
 			# that connects to a point on the right IF there is actually a point
 			# on the right
-			if x < width-1:
+			if x < pointsHoriz-1:
 				# Only create this one if there's space on the right
 				createSpring(x, y, x+1, y, "x ", pxBetweenPoints)
 				
@@ -108,12 +112,12 @@ func initiateSprings():
 					# Only create this one if there's space on the right AND upward
 					createSpring(x, y, x+1, y-1, "du", diagPxBetweenPoints)
 			
-			if y < height-1:
+			if y < pointsVert-1:
 				# Only create this one if there's space downward
 				createSpring(x, y, x, y+1, "y ", pxBetweenPoints)
 				
 				# Only create this one if there's space downward AND to the right
-				if x < width-1:
+				if x < pointsHoriz-1:
 					createSpring(x, y, x+1, y+1, "dd", diagPxBetweenPoints)
 
 func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, length:float):
@@ -142,32 +146,32 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, len
 # which uses eldritch array positioning to get the right points and add them to
 # the array of positions.
 func getOutlineArray():
-	var pointArray:PoolVector2Array
-	var colorArray:PoolColorArray
+	var pointArray:PoolVector2Array = []
+	var colorArray:PoolColorArray   = []
 	
 	var currentNode:RigidBody2D
 	
-	for i in range(0, width):
+	for i in range(0, pointsHoriz):
 		currentNode = get_node(bodyPoints[0][i])
 		pointArray.append(currentNode.position)
 		colorArray.append(markerColor(currentNode))
 	
-	for i in range(0, height-2):
-		currentNode = get_node(bodyPoints[i+1][width-1])
+	for i in range(0, pointsVert-2):
+		currentNode = get_node(bodyPoints[i+1][pointsHoriz-1])
 		pointArray.append(currentNode.position)
 		colorArray.append(markerColor(currentNode))
 	
 	var backwards = []
-	for i in range(0, width):
+	for i in range(0, pointsHoriz):
 		backwards.insert(0, i)
 	
 	for i in backwards:
-		currentNode = get_node(bodyPoints[height-1][i])
+		currentNode = get_node(bodyPoints[pointsVert-1][i])
 		pointArray.append(currentNode.position)
 		colorArray.append(markerColor(currentNode))
 	
 	var cornerlessBackwards = []
-	for i in range(1, height-1):
+	for i in range(1, pointsVert-1):
 		cornerlessBackwards.insert(0, i)
 	
 	for i in cornerlessBackwards:

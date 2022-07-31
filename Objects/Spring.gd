@@ -28,6 +28,9 @@ var hideLine:bool
 # How much force will be applied to the points, based on the stiffness, distance apart, etc
 var hookesForceProduced:float
 
+# The current length of this spring (the distance between the two points that it connects)
+var currentLength
+
 # If this is true, it will add on an extra calculation: pressure force.
 # This is set to true in the SquishyBall code only, and will take the pressure
 # (calculated by the SquishyBall) and apply it to each point.
@@ -50,6 +53,10 @@ func _physics_process(delta):
 		if not hasConvertedStupidNodePaths: # check line 3
 			convertStupidNodePaths()
 			hasConvertedStupidNodePaths = true
+		
+		# Set the global variable for the distance between point A and B
+		# This is used in hookesLawToFindForce() and findPressureForceVector()
+		currentLength = (PointB.global_position - PointA.global_position).length()
 		
 		var springForce  = hookesLawToFindForce()
 		var dampingForce = findDampingForce()
@@ -106,13 +113,10 @@ func fixVector( vector: Vector2 ) -> Vector2:
 	return Vector2(x,y)
 
 # Find the force that the spring is applying, based on things like stiffness and position
-func hookesLawToFindForce() -> float:  
-	# The distance between them
-	var distBetweenPoints = (PointB.global_position - PointA.global_position).length()
-	
+func hookesLawToFindForce() -> float:
 	# The difference between its current length and its resting length
 	# If this is negative, it will push the points apart
-	var differenceToRestLength = restLength - distBetweenPoints
+	var differenceToRestLength = restLength - currentLength
 	
 	# The force it produces increases if the stiffness does, and also if
 	# it's proximity to it's resting length increases
@@ -127,7 +131,7 @@ func findDampingForce() -> float:
 	# The vector pointing towards A from B with length 1
 	var normalizedDirection = (PointA.global_position - PointB.global_position).normalized()
 	
-	# Just the differnce in linear velocity between A and B
+	# Just the difference in linear velocity between A and B
 	var velocityDifference = PointB.linear_velocity - PointA.linear_velocity
 	
 	# The dot product of the two vectors; if this is positive it will move the 
@@ -147,10 +151,6 @@ func findPressureForceVector():
 	# Get the vector pointing from A to B
 	var vectorBetweenPoints:Vector2 = PointB.global_position - PointA.global_position
 	
-	# (x, y) is the vector pointing from one of the points toward the other.
-	# Here, we create a new vector, which is (y, -x). This is the old vector
-	# rotated by 90 degrees, so as to push the points outwards.
-	
 	# Force = P * L, where P is the pressure and L is the length of the spring.
 	var force:float = pressure * (vectorBetweenPoints.length())
 	
@@ -159,7 +159,7 @@ func findPressureForceVector():
 	# rotated to points outwards.
 	var forceVector = vectorBetweenPoints.rotated(-PI/2) * force
 	
-	return forceVector
+	return forceVector / 50000
 
 # Update the line graphic for each frame, to go from point A to B
 func updateLine():
