@@ -39,7 +39,7 @@ var bodyPoints = []
 var p:float # Pressure: Calculated each frame
 var V:float # Volume: Calculated each frame
 
-var n # Amount of substance within the ball: constant (calculated in _ready()
+var n # Amount of substance within the ball: constant (calculated in _ready())
 const R:float = 8.31446261815324 # Ideal gas constant: constant (obviously)
 
 # The pressure is literally just multiplied by this during the calculation
@@ -58,7 +58,7 @@ func _ready():
 	dampingFactor = stiffness * 1.5
 	
 	# n is the area of the shape in pixels
-	n = radiusInPx * 10000
+	n = radiusInPx
 	
 	# This will equal the circumference of the circle / the point count.
 	pxBetweenPoints = radiusInPx*2 * PI / pointsAroundCircle

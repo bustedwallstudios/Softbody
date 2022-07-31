@@ -159,10 +159,11 @@ func findPressureForceVector():
 	# rotated to points outwards.
 	var forceVector = vectorBetweenPoints.rotated(-PI/2) * force
 	
-	return forceVector / 50000
+	return forceVector
 
 # Update the line graphic for each frame, to go from point A to B
 func updateLine():
 	$Line2D.clear_points()
 	$Line2D.add_point(PointA.position)
 	$Line2D.add_point(PointB.position)
+	

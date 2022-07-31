@@ -5,18 +5,19 @@ var totalSpringForce:Vector2
 
 var gravityForce:Vector2
 
-# Set by the SquishyBall each frame, if this is part of a squishy ball
-# and not a box. Remains unused if not part of a ball.
-var pressure:float
-
 func _physics_process(delta):
-	# Add the force from the springs to this point, adjusting for mass
-	self.linear_velocity += (totalSpringForce)/mass
+	
+	# The force we will apply to the point. The springs should not have as much of an effect on 
+	# the points if there is a high mass (F = ma -> a = F/m). The gravity is unaffected by the
+	# mass, and so is added on outside of the division.
+	var finalForce = ((totalSpringForce)/mass) + gravityForce
+	
+	self.linear_velocity += finalForce
 	
 	# Prevent rotation, so the points cannot roll.
 	# This results in better friction.
 	self.angular_velocity = 0
 	self.rotation_degrees = 0
 	
-	# In the meantime, do the gravity amount
-	totalSpringForce = gravityForce
+	# Reset this to 0 for next frame
+	totalSpringForce = Vector2.ZERO
