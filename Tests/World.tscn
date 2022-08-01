@@ -1,21 +1,13 @@
 [gd_scene load_steps=4 format=2]
 
-[sub_resource type="SphereMesh" id=5]
-
 [sub_resource type="BoxShape" id=3]
 extents = Vector3( 10, 0.2, 10 )
 
 [sub_resource type="CubeMesh" id=4]
 
-[node name="Spatial" type="Spatial"]
+[sub_resource type="SphereMesh" id=5]
 
-[node name="SoftBody" type="SoftBody" parent="."]
-transform = Transform( -0.830945, 0.00186519, -0.556351, 0.54337, -0.212061, -0.812268, -0.119495, -0.977255, 0.175197, -0.113752, 1.24116, -0.000750899 )
-use_in_baked_light = true
-mesh = SubResource( 5 )
-material/0 = null
-pressure_coefficient = 1.0
-damping_coefficient = 0.0
+[node name="Spatial" type="Spatial"]
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.947294, 0.320365, 0, -0.320365, 0.947294, 0, 1.36913, 4.67792 )
@@ -30,3 +22,9 @@ shape = SubResource( 3 )
 transform = Transform( 10, 0, 0, 0, 0.2, 0, 0, 0, 10, 0, 0, 0 )
 snap = 0.0001
 mesh = SubResource( 4 )
+
+[node name="SoftBody" type="SoftBody" parent="."]
+transform = Transform( 0.570269, 0, 0.821458, 0, 1, 0, -0.821458, 0, 0.570269, 0, 1.02954, 0 )
+mesh = SubResource( 5 )
+material/0 = null
+volume_stiffness = 1.0

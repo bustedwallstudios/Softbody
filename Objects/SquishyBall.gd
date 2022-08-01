@@ -29,8 +29,9 @@ export (float) var mass = 1
 export (Vector2) var gravity = Vector2(0, 1)
 
 export (bool) var showLines   = true
-export (bool) var showPoints  = true
+export (bool) var showPoints  = false
 export (bool) var showPolygon = false
+export (bool) var showOutline = true
 
 # Stores all the points in a 2d array (used in squishy ball, not square one)
 var bodyPoints = []
@@ -72,7 +73,10 @@ func _ready():
 
 func _physics_process(delta):
 	if showPolygon:
-		refreshShapeArray()
+		$Shape.polygon = getOutlineArray()
+	
+	if showOutline:
+		$Outline.points = getOutlineArray()
 	
 	# Calculate the area (volume) of the shape this frame
 	V = calculateArea()
@@ -141,6 +145,12 @@ func initiateSprings():
 		else:
 			# Create a spring attached to the current and next points
 			createSpring(i, i+1, str(i), pxBetweenPoints)
+	
+	var halfDistAround = int(pointsAroundCircle/2)
+	
+	for i in range(0, halfDistAround):
+		var oppositeIdx = (i + halfDistAround) % pointsAroundCircle
+		createSpring(i, oppositeIdx, str(i) + "long", radiusInPx*2)
 
 func createSpring(idx:int, targetIdx:int, springName:String, length:float):
 	# Create a new spring and add it as a child
@@ -173,6 +183,8 @@ func createSpring(idx:int, targetIdx:int, springName:String, length:float):
 
 func calculateArea():
 	# The running total of all our calculations
+	# I don't know how this works, but at the end of the work we do,
+	# this will equal the area of the shape.
 	var total = 0
 	
 	# The index of the first and second points
@@ -209,10 +221,15 @@ func calculateArea():
 # Refreshes the Polygon2D that we use to represent the shape of the softbody.
 # This simply iterates through each point and adds it to the polygon in order.
 # Very convenient to have that bodyPoints[] array.
-func refreshShapeArray():
+func getOutlineArray() -> PoolVector2Array:
 	var pointArray:PoolVector2Array
 	
+	# Add each point in the "circle" to the array
 	for point in bodyPoints:
 		pointArray.append(get_node(point).position)
 	
-	$Shape.polygon = pointArray
+	# Add the first one to the array again at the end, so the outline line
+	# will be connected at the ends.
+	pointArray.append(get_node(bodyPoints[0]).position)
+	
+	return pointArray

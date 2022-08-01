@@ -71,17 +71,9 @@ func _physics_process(delta):
 		
 		# If this is a ball body, instead of a mesh-like square one, we'll do the calculations
 		# to figure out the pressure-based forces.
-		if isBall:
+		if false:
 			# The AMOUNT of pressure that we will apply to the points
 			var pressureForce:float = findPressureForce() * pressureFactor
-			
-			# The damping we will apply to the points to prevent them from flying off into infinity
-			PointA.linear_damp = 0
-			PointB.linear_damp = 0
-			
-			# The amount of pressure for each specific point, as their damping will be different
-			var pressureForceOnA = pressureForce
-			var pressureForceOnB = pressureForce
 			
 			# The direction we are to apply the force in is perpendicular to the spring,
 			# pointing outwards. This will push them both away from the center of the ball,
@@ -93,8 +85,8 @@ func _physics_process(delta):
 			
 			# Add the pressure force vector to the force that we will ultimately apply to
 			# each point.
-			forceOnPointA += forceDirection * pressureForceOnA
-			forceOnPointB += forceDirection * pressureForceOnB
+			forceOnPointA += (forceDirection * pressureForce)
+			forceOnPointB += (forceDirection * pressureForce)
 		
 		# Set the spring force applied to each point to the force we calculated
 		# This will be set by all the springs affecting the point, and THEN
