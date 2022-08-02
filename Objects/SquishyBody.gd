@@ -25,6 +25,11 @@ export (float) var pointRadius = 10
 export (float, 0, 15) var stiffness = 8
 var dampingFactor
 
+# If plasticity is 1, it will competely deform to any squishing that happens, and
+# stay there without reforming.
+# The lower it is, the less it will conform, and the more it will bounce back.
+export (float, 0, 0.1) var plasticity = 0
+
 export (float) var mass = 1
 
 export (Vector2) var gravity = Vector2(0, 3)
@@ -130,9 +135,10 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, len
 	spring.PointB = bodyPoints[targetY][targetX]
 	
 	# Set the physical properties of the spring
-	spring.restLength    = length
-	spring.stiffness     = self.stiffness
-	spring.dampingFactor = self.dampingFactor
+	spring.restLength     = length
+	spring.stiffness      = stiffness
+	spring.dampingFactor  = dampingFactor
+	spring.plasticity     = plasticity
 	
 	spring.springName = springName + "("+str(x)+","+str(y)+")" # Will look like "dd(3,6)".
 	

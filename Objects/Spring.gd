@@ -16,20 +16,26 @@ export (NodePath) var PointB
 var stiffness:float
 var dampingFactor:float # We multiply the velocity by this each frame, to prevent it from flying off to infinity
 
-var springName = "unknown" # We'll set this to something later on to identify which spring it is
+# The deformity of the springs. The higher this value is, the less the spring will spring back, and
+# the more it will permanently conform to the forces applied.
+# Set by the squishybody itself.
+var plasticity:float = 0
 
 # This is determined during the creation by the body, it's just how long the
 # spring would be if there were no external forces acting upon it
 var restLength:float
-
-# If this is true, we won't show the line
-var hideLine:bool
 
 # How much force will be applied to the points, based on the stiffness, distance apart, etc
 var hookesForceProduced:float
 
 # The current length of this spring (the distance between the two points that it connects)
 var currentLength
+
+# If this is true, we won't show the line
+var hideLine:bool
+
+# We'll set this to something later on to identify which spring it is
+var springName = "unknown" 
 
 # If this is true, it will add on an extra calculation: pressure force.
 # This is set to true in the SquishyBall code only, and will take the pressure
@@ -49,54 +55,65 @@ func convertStupidNodePaths():
 
 # warning-ignore:unused_argument
 func _physics_process(delta):
-	if doneSetup:
-		if not hasConvertedStupidNodePaths: # check line 3
-			convertStupidNodePaths()
-			hasConvertedStupidNodePaths = true
+	# If we aren't done setting up the variables and stuff in _ready, we won't
+	# do any of the physics.
+	if !doneSetup:
+		return
+	
+	if not hasConvertedStupidNodePaths: # check line 3
+		convertStupidNodePaths()
+		hasConvertedStupidNodePaths = true
+	
+	# Set the global variable for the distance between point A and B
+	# This is used in hookesLawToFindForce() and findPressureForce()
+	currentLength = (PointB.global_position - PointA.global_position).length()
+	
+	var springForce:float  = hookesLawToFindForce()
+	var dampingForce:float = findDampingForce()
+	
+	var totalForce:float = springForce + dampingForce
+	
+	# Get the force vectors to apply to each point
+	# They are just opposites, so we can calculate it once and then set the
+	# force on the other point to the inverse of the force on the first one.
+	var forceOnPointA = aimForceToOtherPoint(totalForce, PointA.global_position, PointB.global_position)
+	var forceOnPointB = -forceOnPointA
+	
+	# If this is a ball body, instead of a mesh-like square one, we'll do the calculations
+	# to figure out the pressure-based forces.
+	if false:
+		# The AMOUNT of pressure that we will apply to the points
+		var pressureForce:float = findPressureForce() * pressureFactor
 		
-		# Set the global variable for the distance between point A and B
-		# This is used in hookesLawToFindForce() and findPressureForce()
-		currentLength = (PointB.global_position - PointA.global_position).length()
+		# The direction we are to apply the force in is perpendicular to the spring,
+		# pointing outwards. This will push them both away from the center of the ball,
+		# forcing it to keep its shape.
+		# This should be normalized, so that we can multiply it by the pressureForceOnX
+		# variables to get it to point in the right direction AND have the right magnitude,
+		# and we ensure that it is of length 1 by passing in 1 to the function.
+		var forceDirection:Vector2 = aimForceToOtherPoint(1, PointA.global_position, PointB.global_position).rotated(PI/2)
 		
-		var springForce:float  = hookesLawToFindForce()
-		var dampingForce:float = findDampingForce()
-		
-		var totalForce:float = springForce + dampingForce
-		
-		# Get the force vectors to apply to each point
-		# They are just opposites, so we can calculate it once and then set the
-		# force on the other point to the inverse of the force on the first one.
-		var forceOnPointA = aimForceToOtherPoint(totalForce, PointA.global_position, PointB.global_position)
-		var forceOnPointB = -forceOnPointA
-		
-		# If this is a ball body, instead of a mesh-like square one, we'll do the calculations
-		# to figure out the pressure-based forces.
-		if false:
-			# The AMOUNT of pressure that we will apply to the points
-			var pressureForce:float = findPressureForce() * pressureFactor
-			
-			# The direction we are to apply the force in is perpendicular to the spring,
-			# pointing outwards. This will push them both away from the center of the ball,
-			# forcing it to keep its shape.
-			# This should be normalized, so that we can multiply it by the pressureForceOnX
-			# variables to get it to point in the right direction AND have the right magnitude,
-			# and we ensure that it is of length 1 by passing in 1 to the function.
-			var forceDirection:Vector2 = aimForceToOtherPoint(1, PointA.global_position, PointB.global_position).rotated(PI/2)
-			
-			# Add the pressure force vector to the force that we will ultimately apply to
-			# each point.
-			forceOnPointA += (forceDirection * pressureForce)
-			forceOnPointB += (forceDirection * pressureForce)
-		
-		# Set the spring force applied to each point to the force we calculated
-		# This will be set by all the springs affecting the point, and THEN
-		# integrated into the point itself
-		PointA.totalSpringForce += forceOnPointA
-		PointB.totalSpringForce += forceOnPointB
-		
-		# If we are showing the lines, update them
-		if not hideLine:
-			updateLine()
+		# Add the pressure force vector to the force that we will ultimately apply to
+		# each point.
+		forceOnPointA += (forceDirection * pressureForce)
+		forceOnPointB += (forceDirection * pressureForce)
+	
+	# Set the spring force applied to each point to the force we calculated
+	# This will be set by all the springs affecting the point, and THEN
+	# integrated into the point itself
+	PointA.totalSpringForce += forceOnPointA
+	PointB.totalSpringForce += forceOnPointB
+	
+	# If the springs are plastic, it will deform slightly to the amount it has been
+	# squished.
+	# We only bother doing the math if it is at least a little bit plastic. The
+	# result of the calculation will always be 0 if the plasticity is 0.
+	if plasticity > 0:
+		self.restLength += applyPlasticity()
+	
+	# If we are showing the lines, update them
+	if not hideLine:
+		updateLine()
 
 # Takes the amount of force as an argument and aims it towards
 # the points, from each other. This results in the points receiving 
@@ -136,6 +153,32 @@ func hookesLawToFindForce() -> float:
 	
 	return hookesForceProduced
 
+# Returns the new length of the spring after we do plasticity.
+# The more plastic the shape is, the more it will permanently deform to any forces
+# that occur to it.
+func applyPlasticity() -> float:
+	# The difference between it's current and desired lengths.
+	var currentDeformity:float = currentLength - restLength
+	
+	# The amount of deformity currently scaled to the amount of plasticity.
+	# 1 plasticity will result in the new length of the spring being
+	# the length it has been squished to.
+	# Keep in mind that it can be stretched, and result in the spring becoming
+	# longer than it should be.
+	var deformAmount:float
+	
+	# If it wasn't going to deform much, don't deform it at all.
+	# This prevents it from being constantly squished from gravity, and
+	# only really lets it be squished by heavy objects or falling.
+	if abs(currentDeformity) < 10:
+		deformAmount = 0
+	
+	# However, if it was going to deform a significant amount, deform.
+	else:
+		deformAmount = currentDeformity * plasticity
+	
+	return deformAmount
+
 # Calculates the force applied to the points in the opposite 
 # direction from the spring's force, to prevent the shape
 # from perpetually bouncing in place.
@@ -149,24 +192,6 @@ func findDampingForce() -> float:
 	# The dot product of the two vectors; if this is positive it will move the 
 	# points closer together, otherwise it will move them apart
 	var dotProduct = normalizedDirection.dot(velocityDifference)
-	
-	# It's WAY too big normally, so we shrink it to a reasonable amount.
-	# (50 is completely arbitrary)
-	dotProduct /= 50
-	
-	return dotProduct * dampingFactor
-
-func findPressureDamping(point) -> float:
-	# The vector pointing backwards relative to the direction the
-	# point is moving in with length 1
-	var normalizedDirection = point.linear_velocity.normalized().rotated(-PI)
-	
-	# Just the difference in linear velocity between the point's speed and 0
-	var speed = point.linear_velocity
-	
-	# The dot product of the two vectors; if this is positive it will move the 
-	# points closer together, otherwise it will move them apart
-	var dotProduct = normalizedDirection.dot(speed)
 	
 	# It's WAY too big normally, so we shrink it to a reasonable amount.
 	# (50 is completely arbitrary)
