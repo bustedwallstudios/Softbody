@@ -34,9 +34,15 @@ export (float, 0, 0.1) var plasticity = 0
 # if it is decreased by the plasticity of the object.
 export (float, 0, 1) var memory = 0
 
-export (float) var mass = 1
+# I removed the ability to control this because having it much higher or lower than one results
+# in undesirable behavior
+var mass = 1
 
 export (Vector2) var gravity = Vector2(0, 3)
+
+# If this is true, the corners will have supporting springs connecting them to the points
+# two points diagonally inwards of the corner.
+export (bool) var includeCornerSupports = true
 
 export (bool) var showLines   = true
 export (bool) var showPoints  = false
@@ -132,6 +138,15 @@ func initiateSprings():
 				# Only create this one if there's space downward AND to the right
 				if x < pointsHoriz-1:
 					createSpring(x, y, x+1, y+1, "dd", diagPxBetweenPoints)
+	
+	# Create springs from the corner points to the points two inwards from the corners.
+	# This hopefully prevents the corners from being squished in so far.
+	# We don't have to do this in the loop, because we know exactly where we want these.
+	if includeCornerSupports and pointsHoriz > 2 and pointsVert > 2:
+		createSpring(0,             0,            2,               2,              "TL ", diagPxBetweenPoints*2)
+		createSpring(pointsHoriz-1, 0,            pointsHoriz-2-1, 2,              "TR ", diagPxBetweenPoints*2)
+		createSpring(pointsHoriz-1, pointsVert-1, pointsHoriz-2-1, pointsVert-2-1, "BR ", diagPxBetweenPoints*2)
+		createSpring(0,             pointsVert-1, 2,               pointsVert-2-1, "BL ", diagPxBetweenPoints*2)
 
 func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, length:float):
 	# Create a new spring and add it as a child
