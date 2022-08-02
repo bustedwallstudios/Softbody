@@ -8,8 +8,8 @@ export (PackedScene) var PhysicsPoint
 export (PackedScene) var PhysicsSpring
 
 # The amount of balls sideways and vertically 
-export (int, 1, 100) var pointsHoriz  = 6
-export (int, 1, 100) var pointsVert = 10
+export (int, 1, 100) var pointsHoriz = 6
+export (int, 1, 100) var pointsVert  = 10
 
 export (int) var sizeInPx = 300
 
@@ -61,12 +61,16 @@ func _ready():
 
 # warning-ignore:unused_argument
 func _physics_process(delta):
+	# The position of the point closest to the center of the squishyBody.
+	var centerPointPos = get_node(bodyPoints[int(pointsHoriz/2)][int(pointsVert/2)]).position
+	# Put the camera at the correct position.
+	$SquishyBodyCamera.position = centerPointPos
+	
 	if showPolygon:
 		$Shape.polygon = getOutlineArray()
 	
 	if showOutline:
 		$Outline.points = getOutlineArray()
-
 
 # Create the correct amount of rigidbodies for all the points,
 # and put them in the correct positions
@@ -196,3 +200,6 @@ func getOutlineArray():
 
 func markerColor(node:RigidBody2D):
 	return node.get_node("Marker").color
+
+func enableThisCamera():
+	$SquishyBodyCamera.current = true
