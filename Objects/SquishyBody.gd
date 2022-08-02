@@ -30,6 +30,10 @@ var dampingFactor
 # The lower it is, the less it will conform, and the more it will bounce back.
 export (float, 0, 0.1) var plasticity = 0
 
+# This will gradually return the rest length of the spring to the original length,
+# if it is decreased by the plasticity of the object.
+export (float, 0, 1) var memory = 0
+
 export (float) var mass = 1
 
 export (Vector2) var gravity = Vector2(0, 3)
@@ -127,26 +131,25 @@ func initiateSprings():
 
 func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, length:float):
 	# Create a new spring and add it as a child
-	var spring = PhysicsSpring.instance()
-	add_child(spring)
+	var newSpring = PhysicsSpring.instance()
 	
-	# Connect the spring to this node and the target node, so that it keeps them apart.
-	spring.PointA = bodyPoints[y][x]
-	spring.PointB = bodyPoints[targetY][targetX]
+	# Connect the newSpring to this node and the target node, so that it keeps them apart.
+	newSpring.PointA = bodyPoints[y][x]
+	newSpring.PointB = bodyPoints[targetY][targetX]
 	
-	# Set the physical properties of the spring
-	spring.restLength     = length
-	spring.stiffness      = stiffness
-	spring.dampingFactor  = dampingFactor
-	spring.plasticity     = plasticity
+	# Set the physical properties of the newSpring
+	newSpring.restLength    = length
+	newSpring.stiffness     = stiffness
+	newSpring.dampingFactor = dampingFactor
+	newSpring.plasticity    = plasticity
+	newSpring.memory        = memory
 	
-	spring.springName = springName + "("+str(x)+","+str(y)+")" # Will look like "dd(3,6)".
+	newSpring.springName = springName + "("+str(x)+","+str(y)+")" # Will look like "dd(3,6)".
 	
 	# This will not display the lines connecting the points where the springs are.
-	spring.hideLine = !showLines
+	newSpring.hideLine = !showLines
 	
-	# We're done setting it up, so it can now start processing its physics and whatnot
-	spring.doneSetup = true
+	add_child(newSpring)
 
 # Refreshes the Polygon2D or Line2D that we use to represent the shape of the softbody,
 # which uses eldritch array positioning to get the right points and add them to

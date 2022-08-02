@@ -5,10 +5,6 @@ extends Node2D
 # IMMEDIATELY when the thing starts, TO CONVERT THEM TO AN ACTUAL NODE.
 var hasConvertedStupidNodePaths = false
 
-# This ensures that _process() will only start to do stuff
-# once we're done setting up the spring with points and stuff
-var doneSetup = false
-
 export (NodePath) var PointA
 export (NodePath) var PointB
 
@@ -19,17 +15,24 @@ var dampingFactor:float # We multiply the velocity by this each frame, to preven
 # The deformity of the springs. The higher this value is, the less the spring will spring back, and
 # the more it will permanently conform to the forces applied.
 # Set by the squishybody itself.
-var plasticity:float = 0
+var plasticity:float
+
+# The higher this value is, the more quickly it will return to it's original shape
+# after being deformed by plasticity.
+var memory:float
 
 # This is determined during the creation by the body, it's just how long the
 # spring would be if there were no external forces acting upon it
 var restLength:float
-
-# How much force will be applied to the points, based on the stiffness, distance apart, etc
-var hookesForceProduced:float
+# This is set to restLength in _ready(). It is used to figure out the memory
+# that should be applied, to stretch the springs back to the length they started at.
+var originalRestLength:float
 
 # The current length of this spring (the distance between the two points that it connects)
 var currentLength
+
+# How much force will be applied to the points, based on the stiffness, distance apart, etc
+var hookesForceProduced:float
 
 # If this is true, we won't show the line
 var hideLine:bool
@@ -44,6 +47,8 @@ var isBall = false
 var pressureFactor:float
 
 func _ready():
+	originalRestLength = restLength
+	
 	if hideLine:
 		$Line2D.clear_points()
 		$Line2D.hide()
@@ -55,11 +60,6 @@ func convertStupidNodePaths():
 
 # warning-ignore:unused_argument
 func _physics_process(delta):
-	# If we aren't done setting up the variables and stuff in _ready, we won't
-	# do any of the physics.
-	if !doneSetup:
-		return
-	
 	if not hasConvertedStupidNodePaths: # check line 3
 		convertStupidNodePaths()
 		hasConvertedStupidNodePaths = true
@@ -109,7 +109,7 @@ func _physics_process(delta):
 	# We only bother doing the math if it is at least a little bit plastic. The
 	# result of the calculation will always be 0 if the plasticity is 0.
 	if plasticity > 0:
-		self.restLength += applyPlasticity()
+		self.restLength -= applyPlasticity()
 	
 	# If we are showing the lines, update them
 	if not hideLine:
@@ -158,20 +158,24 @@ func hookesLawToFindForce() -> float:
 # that occur to it.
 func applyPlasticity() -> float:
 	# The difference between it's current and desired lengths.
-	var currentDeformity:float = currentLength - restLength
+	var currentDeformity:float = restLength - currentLength
 	
-	# The amount of deformity currently scaled to the amount of plasticity.
-	# 1 plasticity will result in the new length of the spring being
-	# the length it has been squished to.
+	# The amount of deformity currently, scaled to the amount of plasticity.
+	# 1 plasticity will result in the new length of the spring being changed
+	# to exactly the length it has been squished to.
 	# Keep in mind that it can be stretched, and result in the spring becoming
-	# longer than it should be.
+	# longer than it started.
 	var deformAmount:float
 	
-	# If it wasn't going to deform much, don't deform it at all.
+	# If it wasn't going to deform much, slowly return to the original length.
 	# This prevents it from being constantly squished from gravity, and
 	# only really lets it be squished by heavy objects or falling.
 	if abs(currentDeformity) < 10:
-		deformAmount = 0
+		# The difference between how long it was when it started and the current rest length.
+		var restLengthDifference = restLength - originalRestLength
+		
+		# We are essentially un-deforming, slowly squishing back to the original rest length.
+		deformAmount = restLengthDifference * (memory / 100.0)
 	
 	# However, if it was going to deform a significant amount, deform.
 	else:
