@@ -5,7 +5,7 @@ var totalSpringForce:Vector2
 
 var gravityForce:Vector2
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	
 	# The force we will apply to the point. The springs should not have as much of an effect on 
 	# the points if there is a high mass (F = ma -> a = F/m). The gravity is unaffected by the

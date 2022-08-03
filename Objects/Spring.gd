@@ -24,7 +24,7 @@ var memory:float
 # This is determined during the creation by the body, it's just how long the
 # spring would be if there were no external forces acting upon it
 var restLength:float
-# This is set to restLength in _ready(). It is used to figure out the memory
+# This is set to the same thing as restLength in the softbody. It is used to figure out the memory
 # that should be applied, to stretch the springs back to the length they started at.
 var originalRestLength:float
 
@@ -47,22 +47,25 @@ var isBall = false
 var pressureFactor:float
 
 func _ready():
-	originalRestLength = restLength
-	
 	if hideLine:
 		$Line2D.clear_points()
 		$Line2D.hide()
+	
+	convertStupidNodePaths()
 
 func convertStupidNodePaths():
 	# Change the |path to the node| to the node itself
 	PointA = get_node(PointA)
 	PointB = get_node(PointB)
 
+var t = 0
 # warning-ignore:unused_argument
 func _physics_process(delta):
-	if not hasConvertedStupidNodePaths: # check line 3
-		convertStupidNodePaths()
-		hasConvertedStupidNodePaths = true
+	
+	# fuck you
+	if t <10:
+		self.originalRestLength = self.restLength
+		t+=1
 	
 	# Set the global variable for the distance between point A and B
 	# This is used in hookesLawToFindForce() and findPressureForce()
@@ -109,7 +112,7 @@ func _physics_process(delta):
 	# We only bother doing the math if it is at least a little bit plastic. The
 	# result of the calculation will always be 0 if the plasticity is 0.
 	if plasticity > 0:
-		self.restLength -= applyPlasticity()
+		self.restLength -= findPlasticityEffect()
 	
 	# If we are showing the lines, update them
 	if not hideLine:
@@ -156,9 +159,9 @@ func hookesLawToFindForce() -> float:
 # Returns the new length of the spring after we do plasticity.
 # The more plastic the shape is, the more it will permanently deform to any forces
 # that occur to it.
-func applyPlasticity() -> float:
-	# The difference between it's current and desired lengths.
-	var currentDeformity:float = restLength - currentLength
+func findPlasticityEffect() -> float:
+	# The difference between its current and desired lengths.
+	var currentDeformity:float = self.restLength - currentLength
 	
 	# The amount of deformity currently, scaled to the amount of plasticity.
 	# 1 plasticity will result in the new length of the spring being changed
