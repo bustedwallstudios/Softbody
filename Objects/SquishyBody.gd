@@ -122,11 +122,13 @@ func initiateSprings():
 	var d = orthogSpringLength
 	var diagPxBetweenPoints = pythag(d, d)
 	
+	# aldkjfadf
+	var r = pythag(sizeInPx, sizeInPx) / 2.0
+	var bulgeToCreateCircle = (r - ((r * sqrt(2)) / 2)) * 2
+	
 	for y in pointsVert:
 		for x in pointsHorz:
 			# Magic?? No, this is all still math
-			var r = pythag(sizeInPx, sizeInPx) / 2.0
-			var bulgeToCreateCircle = r - ((r * sqrt(2)) / 2)
 			
 			# Adding this number to the spring length results in the middle of the
 			# shape bulging outwards, to make it more like a circle, based on edgeBulges.
