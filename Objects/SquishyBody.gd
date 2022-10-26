@@ -22,12 +22,13 @@ export (float) var pointRadius = 10
 # Damping factor is only really useful if it is set to exactly the same thing as stiffness,
 # so I have removed the ability to control that from the node.
 export (float, 0, 15) var stiffness = 8
-var dampingFactor
+# The body works the best if dampingFactor = stiffness (if it's not it explodes basically instantly)
+onready var dampingFactor = stiffness
 
 # If plasticity is 1, it will competely deform to any squishing that happens, and
 # stay there without reforming.
 # The lower it is, the less it will conform, and the more it will bounce back.
-export (float, 0, 0.1) var plasticity = 0
+export (float, 0, 0.2) var plasticity = 0
 
 # This will gradually return the rest length of the spring to the original length,
 # if it is decreased by the plasticity of the object.
@@ -57,9 +58,6 @@ var lengthForThisSpring:float
 var bodyPoints = []
 
 func _ready():
-	# The body works the best if they are equal.
-	dampingFactor = stiffness
-	
 	orthogSpringLength = sizeInPx/pointsHorz
 	
 	if not showPolygon:
@@ -207,12 +205,30 @@ func initiateSprings():
 	# We don't have to do this in the loop, because we know exactly where we want these.
 	if includeCornerSupports and pointsHorz > 2 and pointsVert > 2:
 		self.lengthForThisSpring = diagPxBetweenPoints*2
-		createSpring(0,            0,            2,              2,              "TL ")
-		createSpring(pointsHorz-1, 0,            pointsHorz-2-1, 2,              "TR ")
-		createSpring(pointsHorz-1, pointsVert-1, pointsHorz-2-1, pointsVert-2-1, "BR ")
-		createSpring(0,            pointsVert-1, 2,              pointsVert-2-1, "BL ")
+		
+		# This code connects each corner to the point two points in from the corner.
+#		createSpring(0,            0,            2,              2,              "TL ")
+#		createSpring(pointsHorz-1, 0,            pointsHorz-2-1, 2,              "TR ")
+#		createSpring(pointsHorz-1, pointsVert-1, pointsHorz-2-1, pointsVert-2-1, "BR ")
+#		createSpring(0,            pointsVert-1, 2,              pointsVert-2-1, "BL ")
 
-func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String):
+		# The length from one corner to the opposite corner. This takes into account
+		# the possible difference between the length and width of the rectangle.
+		# We need to subtract one spring length because it doesn't get fully to the end,
+		# due to the final point being one spring length short of the "sizeInPx".
+		var actualHorzLen = sizeInPx - (sizeInPx/pointsHorz)
+		var actualVertLen = sizeInPx - (sizeInPx/pointsVert)
+		var fullDiagonalLength = sqrt(pow(actualHorzLen*(pointsHorz/pointsVert), 2) + pow(actualVertLen, 2))
+		
+		# Top two corners
+		createSpring(0,            0, int(pointsHorz/2), int(pointsVert/2), "TL ", fullDiagonalLength/2)
+		createSpring(pointsHorz-1, 0, int(pointsHorz/2), int(pointsVert/2), "TR ", fullDiagonalLength/2)
+		
+		# Bottom two corners
+		createSpring(0,            pointsVert-1, int(pointsHorz/2), int(pointsVert/2), "TL ", fullDiagonalLength/2)
+		createSpring(pointsHorz-1, pointsVert-1, int(pointsHorz/2), int(pointsVert/2), "TR ", fullDiagonalLength/2)
+
+func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, lengthOverride:float=0):
 	# Create a new spring and add it as a child
 	var newSpring = PhysicsSpring.instance()
 	
@@ -221,7 +237,10 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String):
 	newSpring.PointB = bodyPoints[targetY][targetX]
 	
 	# Set the physical properties of the newSpring
-	newSpring.restLength         = self.lengthForThisSpring
+	if lengthOverride == 0:
+		newSpring.restLength     = self.lengthForThisSpring
+	else:
+		newSpring.restLength     = lengthOverride
 	newSpring.originalRestLength = self.lengthForThisSpring
 	newSpring.stiffness          = self.stiffness
 	newSpring.dampingFactor      = self.dampingFactor
