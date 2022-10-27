@@ -25,13 +25,12 @@ export (float, 0, 15) var stiffness = 8
 # The body works the best if dampingFactor = stiffness (if it's not it explodes basically instantly)
 onready var dampingFactor = stiffness
 
-# If plasticity is 1, it will competely deform to any squishing that happens, and
-# stay there without reforming.
+# If plasticity is 1, it will competely deform to any squishing that happens.
 # The lower it is, the less it will conform, and the more it will bounce back.
 export (float, 0, 0.2) var plasticity = 0
 
 # This will gradually return the rest length of the spring to the original length,
-# if it is decreased by the plasticity of the object.
+# if it is decreased by the plasticity of the object (think memory foam pillow).
 export (float, 0, 1) var memory = 0
 
 export (float) var edgeBulges = 0
@@ -95,7 +94,7 @@ func initiatePoints():
 			
 			# Scale the point size and marker size appropriately
 			newPoint.get_node("Hitbox").shape.radius = pointRadius
-			newPoint.get_node("Marker").scale = Vector2(pointRadius/10, pointRadius/10)
+			newPoint.get_node("Marker").scale = Vector2(pointRadius/10, pointRadius/10) # /10 because it is already 10 pixels across
 			
 			# Adjust the color to give the whole squishy body a nice rainbow across it
 			newPoint.get_node("Marker").color = Color.from_hsv((x + y) / (float(pointsHorz) + float(pointsVert)), 1, 1)
@@ -131,7 +130,6 @@ func initiateSprings():
 			var bulgeVert = (sin(x * (PI/(pointsHorz-1))) * bulgeToCreateCircle) * edgeBulges
 			var bulgeHorz = (sin(y * (PI/(pointsVert-1))) * bulgeToCreateCircle) * edgeBulges
 			
-			# The pythagorean theorem done on orthogSpringLength
 			var diagSpringLength = pythag(orthogSpringLength, orthogSpringLength)
 			
 			# Because some are diagonal, the length will be the hypotenuse of the two
@@ -218,7 +216,7 @@ func initiateSprings():
 		# due to the final point being one spring length short of the "sizeInPx".
 		var actualHorzLen = sizeInPx - (sizeInPx/pointsHorz)
 		var actualVertLen = sizeInPx - (sizeInPx/pointsVert)
-		var fullDiagonalLength = sqrt(pow(actualHorzLen*(pointsHorz/pointsVert), 2) + pow(actualVertLen, 2))
+		var fullDiagonalLength = sqrt(pow(actualHorzLen, 2) + pow(actualVertLen, 2))
 		
 		# Top two corners
 		createSpring(0,            0, int(pointsHorz/2), int(pointsVert/2), "TL ", fullDiagonalLength/2)

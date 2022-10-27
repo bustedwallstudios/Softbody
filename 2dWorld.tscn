@@ -82,13 +82,14 @@ shape = SubResource( 6 )
 polygon = PoolVector2Array( -546, 3.99805, -546, -13.002, 659, -12.9976, 659, 4.00244 )
 
 [node name="RotatingBeam2" type="StaticBody2D" parent="World"]
-position = Vector2( 2203, -336 )
+position = Vector2( -908, 105 )
+rotation = -1.66504
 scale = Vector2( 1.016, 3.251 )
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_group_": true
 }
-degreesPerFrame = 1.0
+degreesPerFrame = 0.0
 
 [node name="GroundCollision" type="CollisionShape2D" parent="World/RotatingBeam2"]
 position = Vector2( 56.2972, -4.48892 )
@@ -184,12 +185,12 @@ scale = Vector2( 44.924, 44.925 )
 polygon = PoolVector2Array( -4.45, 1.625, -4.6, 0.425001, -4.45, -0.775, -4, -1.875, -3.25, -2.825, -2.3, -3.575, -1.2, -4.025, -0.0499992, -4.175, 1.2, -4.025, 2.3, -3.575, 3.25, -2.825, 3.56939, -2.47059, 4, -1.875, 4.45, -0.775, 4.6, 0.375, 4.45, 1.625, 4, 2.725, 3.25, 3.675, 2.3, 4.425, 1.2, 4.875, 0, 5.025, -1.15, 4.875, -2.3, 4.375, -3.25, 3.675, -4, 2.725 )
 
 [node name="SquishyBody" parent="." instance=ExtResource( 5 )]
-position = Vector2( -933, -2152 )
-pointsHorz = 5
-pointsVert = 3
-sizeInPx = 625
+position = Vector2( -62, -128 )
+pointsHorz = 2
+pointsVert = 2
+sizeInPx = 500
 stiffness = 15.0
-gravity = Vector2( 0, 15 )
+gravity = Vector2( 0, 0 )
 includeCornerSupports = false
 showPoints = true
 showOutline = false
