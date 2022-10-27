@@ -186,8 +186,8 @@ polygon = PoolVector2Array( -4.45, 1.625, -4.6, 0.425001, -4.45, -0.775, -4, -1.
 
 [node name="SquishyBody" parent="." instance=ExtResource( 5 )]
 position = Vector2( -62, -128 )
-pointsHorz = 2
-pointsVert = 2
+pointsHorz = 5
+pointsVert = 5
 sizeInPx = 500
 stiffness = 15.0
 gravity = Vector2( 0, 0 )

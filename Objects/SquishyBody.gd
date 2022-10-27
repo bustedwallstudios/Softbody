@@ -57,7 +57,7 @@ var lengthForThisSpring:float
 var bodyPoints = []
 
 func _ready():
-	orthogSpringLength = sizeInPx/pointsHorz
+	orthogSpringLength = sizeInPx/(pointsHorz-1)
 	
 	if not showPolygon:
 		$Shape.hide()
