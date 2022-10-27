@@ -7,8 +7,8 @@ export (PackedScene) var PhysicsPoint
 export (PackedScene) var PhysicsSpring
 
 # The amount of balls sideways and vertically 
-export (int, 1, 100) var pointsHorz = 6
-export (int, 1, 100) var pointsVert = 10
+export (int, 2, 100) var pointsHorz = 6
+export (int, 2, 100) var pointsVert = 10
 
 export (int) var sizeInPx = 300
 
@@ -43,7 +43,7 @@ export (Vector2) var gravity = Vector2(0, 3)
 
 # If this is true, the corners will have supporting springs connecting them to the points
 # two points diagonally inwards of the corner.
-export (bool) var includeCornerSupports = true
+export (bool) var includeCornerSupports = false
 
 export (bool) var showLines   = true
 export (bool) var showPoints  = false
@@ -204,18 +204,14 @@ func initiateSprings():
 	if includeCornerSupports and pointsHorz > 2 and pointsVert > 2:
 		self.lengthForThisSpring = diagPxBetweenPoints*2
 		
-		# This code connects each corner to the point two points in from the corner.
-#		createSpring(0,            0,            2,              2,              "TL ")
-#		createSpring(pointsHorz-1, 0,            pointsHorz-2-1, 2,              "TR ")
-#		createSpring(pointsHorz-1, pointsVert-1, pointsHorz-2-1, pointsVert-2-1, "BR ")
-#		createSpring(0,            pointsVert-1, 2,              pointsVert-2-1, "BL ")
-
 		# The length from one corner to the opposite corner. This takes into account
 		# the possible difference between the length and width of the rectangle.
 		# We need to subtract one spring length because it doesn't get fully to the end,
 		# due to the final point being one spring length short of the "sizeInPx".
-		var actualHorzLen = sizeInPx - (sizeInPx/pointsHorz)
-		var actualVertLen = sizeInPx - (sizeInPx/pointsVert)
+		
+		var actualHorzLen = sizeInPx # The horizontal length is actually the specified size.
+		var actualVertLen = sizeInPx * ((pointsVert/pointsHorz)+1) # The vertical length is not the same as the horizontal length always, so adjust for that.
+		
 		var fullDiagonalLength = sqrt(pow(actualHorzLen, 2) + pow(actualVertLen, 2))
 		
 		# Top two corners
