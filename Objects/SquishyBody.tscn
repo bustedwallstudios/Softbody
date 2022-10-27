@@ -11,7 +11,7 @@ PhysicsSpring = ExtResource( 2 )
 
 [node name="Shape" type="Polygon2D" parent="."]
 z_index = 1
-color = Color( 0, 1, 0, 1 )
+color = Color( 0.4, 0.501961, 1, 1 )
 
 [node name="Outline" type="Line2D" parent="."]
 z_index = 1
