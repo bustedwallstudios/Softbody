@@ -104,8 +104,8 @@ func _physics_process(delta):
 	# Set the spring force applied to each point to the force we calculated
 	# This will be set by all the springs affecting the point, and THEN
 	# integrated into the point itself
-	PointA.totalSpringForce += forceOnPointA
-	PointB.totalSpringForce += forceOnPointB
+	PointA.applySpringForce(forceOnPointA)
+	PointB.applySpringForce(forceOnPointB)
 	
 	# If the springs are plastic, it will deform slightly to the amount it has been
 	# squished.

@@ -8,7 +8,6 @@
 script = ExtResource( 3 )
 PhysicsPoint = ExtResource( 1 )
 PhysicsSpring = ExtResource( 2 )
-pointsHorz = 1
 
 [node name="Shape" type="Polygon2D" parent="."]
 z_index = 1
@@ -23,3 +22,4 @@ begin_cap_mode = 2
 end_cap_mode = 2
 
 [node name="SquishyBodyCamera" type="Camera2D" parent="."]
+zoom = Vector2( 2, 2 )

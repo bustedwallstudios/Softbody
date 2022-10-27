@@ -45,6 +45,10 @@ export (Vector2) var gravity = Vector2(0, 3)
 # two points diagonally inwards of the corner.
 export (bool) var includeCornerSupports = false
 
+# If this is false, the points will be a rainbow, if it is true, they will be tinted every frame 
+# based on the forces being applied to them.
+export (bool) var forceTint = false
+
 export (bool) var showLines   = true
 export (bool) var showPoints  = false
 export (bool) var showPolygon = false
@@ -104,6 +108,9 @@ func initiatePoints():
 			
 			# All the points need to have the same gravity also
 			newPoint.gravityForce = gravity
+			
+			# Whether we are tinting the points based on the forces applied to them
+			newPoint.doTint = forceTint
 			
 			add_child(newPoint)
 			
