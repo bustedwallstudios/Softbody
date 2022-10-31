@@ -19,9 +19,10 @@ var pxBetweenPoints # The amount of pixels between each point (we have to calcul
 export (float) var pointRadius = 10
 
 # These will be applied to each spring as they are created
+# Stiffness is not important in the squishy ball; the edges should remain pretty solid.
 # Damping factor is only really useful if it is set to exactly the same thing as stiffness,
 # so I have removed the ability to control that from the node.
-export (float, 0, 15) var stiffness = 10
+var stiffness = 13
 var dampingFactor
 
 export (float) var mass = 1
@@ -43,9 +44,6 @@ var V:float # Volume: Calculated each frame
 var n # Amount of substance within the ball: constant (calculated in _ready())
 const R:float = 8.31446261815324 # Ideal gas constant: constant (obviously)
 
-# The pressure is literally just multiplied by this during the calculation
-export (float) var pressureFactor = 1
-
 # The formula to calculate pressure is PV = nRT, but T is temp (we don't care
 # about that), and all we actually need is pressure. Thus, we rearrange the
 # formula to solve for P: P = nR/V. This makes sense; as the volume increases,
@@ -58,7 +56,7 @@ func _ready():
 	# 2 springs on each point)
 	dampingFactor = stiffness * 1.5
 	
-	# n is the area of the shape in pixels
+	# n is the amount of "gas" within the ball (nothing's really there of course)
 	n = radiusInPx
 	
 	# This will equal the circumference of the circle / the point count.
@@ -100,9 +98,8 @@ func initiatePoints():
 		# Calculate the position to put it at around the circle
 		var directionVector = Vector2(cos(angle), sin(angle))
 		var nodePosition    = directionVector * radiusInPx
-		angle += angleApart # Increase the angle that we'll create the next one at
 		
-		# Initiate a new point in memory
+		# Initiate a new point
 		var newPoint = PhysicsPoint.instance()
 		
 		# Put the new point where it should be
@@ -114,7 +111,7 @@ func initiatePoints():
 		
 		# Adjust the color to give the whole squishy body a nice rainbow across it
 		# We have to multiply it by 1.0 to prevent it from rounding to 0 no matter what -_-
-		newPoint.get_node("Marker").color = Color.from_hsv((pointIdx*1.0)/(pointsAroundCircle *1.0), 1, 1)
+		newPoint.get_node("Marker").color = Color.from_hsv((pointIdx*1.0)/(pointsAroundCircle*1.0), 1, 1)
 		
 		# All the points need to have the same mass
 		newPoint.mass = mass
@@ -130,6 +127,8 @@ func initiatePoints():
 		
 		# And add it to the array so we can easily remember which are which
 		bodyPoints.append(newPoint.get_path())
+		
+		angle += angleApart # Increase the angle that we'll create the next one at
 
 func initiateSprings():
 	# Loop the same amount of times as we have points in the circle
@@ -146,16 +145,15 @@ func initiateSprings():
 			# Create a spring attached to the current and next points
 			createSpring(i, i+1, str(i), pxBetweenPoints)
 	
-	var halfDistAround = int(pointsAroundCircle/2)
-	
-	for i in range(0, halfDistAround):
-		var oppositeIdx = (i + halfDistAround) % pointsAroundCircle
-		createSpring(i, oppositeIdx, str(i) + "long", radiusInPx*2)
+#	var halfDistAround = int(pointsAroundCircle/2)
+#
+#	for i in range(0, halfDistAround):
+#		var oppositeIdx = (i + halfDistAround) % pointsAroundCircle
+#		createSpring(i, oppositeIdx, str(i) + "long", radiusInPx*2)
 
 func createSpring(idx:int, targetIdx:int, springName:String, length:float):
 	# Create a new spring and add it as a child
 	var spring = PhysicsSpring.instance()
-	add_child(spring)
 	
 	# Connect the spring to this node and the target node, so that it keeps them apart.
 	# The only case where targetIdx won't be idx+1 is when we're on the last point,
@@ -165,8 +163,8 @@ func createSpring(idx:int, targetIdx:int, springName:String, length:float):
 	
 	# Set the physical properties of the spring
 	spring.restLength    = length
-	spring.stiffness     = self.stiffness
-	spring.dampingFactor = self.dampingFactor
+	spring.stiffness     = stiffness
+	spring.dampingFactor = dampingFactor
 	spring.pressureFactor = pressureFactor
 	
 	# This is the squishy ball, so the spring has to adjust the forces according to that
@@ -178,8 +176,7 @@ func createSpring(idx:int, targetIdx:int, springName:String, length:float):
 	# This will not display the lines connecting the points where the springs are.
 	spring.hideLine = !showLines
 	
-	# We're done setting it up, so it can now start processing its physics and whatnot
-	spring.doneSetup = true
+	add_child(spring)
 
 func calculateArea():
 	# The running total of all our calculations
@@ -214,7 +211,7 @@ func calculateArea():
 		total += result
 	
 	# Divide the absolute value of the total by 2, and we have our area.
-	total = abs(total/2)
+	total = total/2
 	
 	return total
 

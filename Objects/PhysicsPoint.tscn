@@ -7,6 +7,7 @@
 [sub_resource type="CircleShape2D" id=1]
 
 [node name="PhysicsPoint" type="RigidBody2D"]
+collision_mask = 0
 physics_material_override = SubResource( 2 )
 gravity_scale = 0.0
 continuous_cd = 1

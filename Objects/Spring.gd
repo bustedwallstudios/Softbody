@@ -5,12 +5,12 @@ extends Node2D
 # IMMEDIATELY when the thing starts, TO CONVERT THEM TO AN ACTUAL NODE.
 var hasConvertedStupidNodePaths = false
 
-export (NodePath) var PointA
-export (NodePath) var PointB
+var PointA
+var PointB
 
 # stiffness and dampingFactor are both set by the squishyBody itself.
 var stiffness:float
-var dampingFactor:float # We multiply the velocity by this each frame, to prevent it from flying off to infinity
+var dampingFactor:float
 
 # The deformity of the springs. The higher this value is, the less the spring will spring back, and
 # the more it will permanently conform to the forces applied.
@@ -51,12 +51,14 @@ func _ready():
 		$Line2D.clear_points()
 		$Line2D.hide()
 	
-	convertStupidNodePaths()
+	if not hasConvertedStupidNodePaths:
+			convertStupidNodePaths()
 
 func convertStupidNodePaths():
 	# Change the |path to the node| to the node itself
 	PointA = get_node(PointA)
 	PointB = get_node(PointB)
+	hasConvertedStupidNodePaths = true
 
 var t = 0
 # warning-ignore:unused_argument
@@ -71,8 +73,8 @@ func _physics_process(delta):
 	# This is used in hookesLawToFindForce() and findPressureForce()
 	currentLength = (PointB.global_position - PointA.global_position).length()
 	
-	var springForce:float  = hookesLawToFindForce()
-	var dampingForce:float = findDampingForce()
+	var springForce:float  = hookesLawToFindForce() * (delta*60)
+	var dampingForce:float = findDampingForce()     * (delta*60)
 	
 	var totalForce:float = springForce + dampingForce
 	
@@ -84,9 +86,9 @@ func _physics_process(delta):
 	
 	# If this is a ball body, instead of a mesh-like square one, we'll do the calculations
 	# to figure out the pressure-based forces.
-	if false:
+	if isBall:
 		# The AMOUNT of pressure that we will apply to the points
-		var pressureForce:float = findPressureForce() * pressureFactor
+		var pressureForce:float = findPressureForce() * pressureFactor * (delta*60)
 		
 		# The direction we are to apply the force in is perpendicular to the spring,
 		# pointing outwards. This will push them both away from the center of the ball,
@@ -208,7 +210,7 @@ func findDampingForce() -> float:
 
 func findPressureForce() -> float:
 	# Get the pressure from the squishyball
-	var pressure:float = PointA.get_parent().p
+	var pressure:float = PointA.get_parent().p # float
 	
 	# Get the vector pointing from A to B
 	var vectorBetweenPoints:Vector2 = PointB.global_position - PointA.global_position

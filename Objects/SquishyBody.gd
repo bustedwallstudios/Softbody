@@ -6,7 +6,7 @@ export (PackedScene) var PhysicsPoint
 # This allows us to create the SPRINGS whenever we need to
 export (PackedScene) var PhysicsSpring
 
-# The amount of balls sideways and vertically 
+# The amount of balls sideways and vertically
 export (int, 2, 100) var pointsHorz = 6
 export (int, 2, 100) var pointsVert = 10
 
@@ -152,7 +152,7 @@ func initiateSprings():
 			var downLength      = orthogSpringLength
 			
 			# The lengths of each spring, if we're bulging it out
-			var orthogWithBulgeHorz = orthogSpringLength + bulgeHorz
+			var orthogWithBulgeHorz = orthogSpringLength + bulgeHorz #0.8 just bcuz it looks better
 			var orthogWithBulgeVert = orthogSpringLength + bulgeVert
 			var diagWithBulge = pythag(orthogWithBulgeHorz, orthogSpringLength)
 			
@@ -231,29 +231,29 @@ func initiateSprings():
 
 func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, lengthOverride:float=0):
 	# Create a new spring and add it as a child
-	var newSpring = PhysicsSpring.instance()
+	var spring = PhysicsSpring.instance()
 	
-	# Connect the newSpring to this node and the target node, so that it keeps them apart.
-	newSpring.PointA = bodyPoints[y][x]
-	newSpring.PointB = bodyPoints[targetY][targetX]
+	# Connect the spring to this node and the target node, so that it keeps them apart.
+	spring.PointA = bodyPoints[y][x]
+	spring.PointB = bodyPoints[targetY][targetX]
 	
-	# Set the physical properties of the newSpring
+	# Set the physical properties of the spring
 	if lengthOverride == 0:
-		newSpring.restLength     = self.lengthForThisSpring
+		spring.restLength     = lengthForThisSpring
 	else:
-		newSpring.restLength     = lengthOverride
-	newSpring.originalRestLength = self.lengthForThisSpring
-	newSpring.stiffness          = self.stiffness
-	newSpring.dampingFactor      = self.dampingFactor
-	newSpring.plasticity         = self.plasticity
-	newSpring.memory             = self.memory
+		spring.restLength     = lengthOverride
+	spring.originalRestLength = lengthForThisSpring
+	spring.stiffness          = stiffness
+	spring.dampingFactor      = dampingFactor
+	spring.plasticity         = plasticity
+	spring.memory             = memory
 	
-	newSpring.springName = springName + "("+str(x)+","+str(y)+")" # Will look like "dd(3,6)".
+	spring.springName = springName + "("+str(x)+","+str(y)+")" # Will look like "dd(3,6)".
 	
 	# This will not display the lines connecting the points where the springs are.
-	newSpring.hideLine = !showLines
+	spring.hideLine = !showLines
 	
-	add_child(newSpring)
+	add_child(spring)
 
 # Refreshes the Polygon2D or Line2D that we use to represent the shape of the softbody,
 # which uses eldritch array positioning to get the right points and add them to
