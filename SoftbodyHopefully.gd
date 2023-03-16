@@ -1,14 +1,14 @@
 extends Polygon2D
 
 # The amount of substance
-export (float) var amountOfSubstance_n = 1000
-export (float) var idealGasConstant_R  = 8.31446261815324; # 8.31446261815324 is the real life universal gas constant
+@export (float) var amountOfSubstance_n = 1000
+@export (float) var idealGasConstant_R  = 8.31446261815324; # 8.31446261815324 is the real life universal gas constant
 
 # This allows us to create the rigidbodies whenever we need to
-export (PackedScene) var PhysicsPoint
+@export (PackedScene) var PhysicsPoint
 
 # This allows us to create the SPRINGS whenever we need to
-export (PackedScene) var Spring
+@export (PackedScene) var Spring
 
 # Lets us keep track of the physics points and springs based on an iterable value
 var allPhysicsPoints = []
@@ -55,8 +55,8 @@ func initiatePoints():
 	var counter = 0
 	for point in self.polygon:
 		# Initiate a new one in memory
-		var newPoint  = PhysicsPoint.instance()
-		var newSpring = Spring.instance()
+		var newPoint  = PhysicsPoint.instantiate()
+		var newSpring = Spring.instantiate()
 		
 		# Once we've instantiated it, add it to
 		# the universe, as a child of self

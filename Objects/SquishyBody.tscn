@@ -1,25 +1,25 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=4 format=3 uid="uid://dkpycf1pnklng"]
 
-[ext_resource path="res://Objects/PhysicsPoint.tscn" type="PackedScene" id=1]
-[ext_resource path="res://Objects/Spring.tscn" type="PackedScene" id=2]
-[ext_resource path="res://Objects/SquishyBody.gd" type="Script" id=3]
+[ext_resource type="PackedScene" uid="uid://bgtn2fou328kr" path="res://Objects/PhysicsPoint.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://Objects/Spring.tscn" id="2"]
+[ext_resource type="Script" path="res://Objects/SquishyBody.gd" id="3"]
 
 [node name="SquishyBody" type="Node2D"]
-script = ExtResource( 3 )
-PhysicsPoint = ExtResource( 1 )
-PhysicsSpring = ExtResource( 2 )
+script = ExtResource("3")
+PhysicsPoint = ExtResource("1")
+PhysicsSpring = ExtResource("2")
 
-[node name="Shape" type="Polygon2D" parent="."]
+[node name="Shape3D" type="Polygon2D" parent="."]
 z_index = 1
-color = Color( 0.4, 0.501961, 1, 1 )
+color = Color(0.4, 0.501961, 1, 1)
 
 [node name="Outline" type="Line2D" parent="."]
 z_index = 1
 width = 20.0
-default_color = Color( 0.4, 0.501961, 1, 1 )
+default_color = Color(0.4, 0.501961, 1, 1)
 joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 
 [node name="SquishyBodyCamera" type="Camera2D" parent="."]
-zoom = Vector2( 2, 2 )
+zoom = Vector2(0.5, 0.5)

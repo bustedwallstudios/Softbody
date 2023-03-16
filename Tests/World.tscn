@@ -1,30 +1,30 @@
 [gd_scene load_steps=4 format=2]
 
-[sub_resource type="BoxShape" id=3]
-extents = Vector3( 10, 0.2, 10 )
+[sub_resource type="BoxShape3D" id=3]
+size = Vector3( 10, 0.2, 10 )
 
-[sub_resource type="CubeMesh" id=4]
+[sub_resource type="BoxMesh" id=4]
 
 [sub_resource type="SphereMesh" id=5]
 
-[node name="Spatial" type="Spatial"]
+[node name="Node3D" type="Node3D"]
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.947294, 0.320365, 0, -0.320365, 0.947294, 0, 1.36913, 4.67792 )
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 0.947294, 0.320365, 0, -0.320365, 0.947294, 0, 1.36913, 4.67792 )
 
-[node name="StaticBody" type="StaticBody" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.20813, 0 )
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.20813, 0 )
 
-[node name="CollisionShape" type="CollisionShape" parent="StaticBody"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
 shape = SubResource( 3 )
 
-[node name="CSGMesh" type="CSGMesh" parent="StaticBody"]
-transform = Transform( 10, 0, 0, 0, 0.2, 0, 0, 0, 10, 0, 0, 0 )
+[node name="CSGMesh3D" type="CSGMesh3D" parent="StaticBody3D"]
+transform = Transform3D( 10, 0, 0, 0, 0.2, 0, 0, 0, 10, 0, 0, 0 )
 snap = 0.0001
 mesh = SubResource( 4 )
 
-[node name="SoftBody" type="SoftBody" parent="."]
-transform = Transform( 0.570269, 0, 0.821458, 0, 1, 0, -0.821458, 0, 0.570269, 0, 1.02954, 0 )
+[node name="SoftBody3D" type="SoftBody3D" parent="."]
+transform = Transform3D( 0.570269, 0, 0.821458, 0, 1, 0, -0.821458, 0, 0.570269, 0, 1.02954, 0 )
 mesh = SubResource( 5 )
 material/0 = null
 volume_stiffness = 1.0

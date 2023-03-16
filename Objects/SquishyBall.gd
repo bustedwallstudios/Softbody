@@ -4,19 +4,19 @@ extends Node2D
 # P = NRT / A, F = P * L // 2D
 
 # This allows us to create the rigidbodies whenever we need to
-export (PackedScene) var PhysicsPoint
+@export var PhysicsPoint:PackedScene
 
 # This allows us to create the SPRINGS whenever we need to
-export (PackedScene) var PhysicsSpring
+@export var PhysicsSpring:PackedScene
 
 # The amount of pixels away from the center each vertex will be
-export (int) var radiusInPx = 100
+@export var radiusInPx = 100
 
 # The amount of vertices around the circle (3 makes it a triangle, 4 a square, etc.)
-export (int, 3, 100) var pointsAroundCircle = 10
+@export_range(3, 100) var pointsAroundCircle = 10
 var pxBetweenPoints # The amount of pixels between each point (we have to calculate this in _ready()
 
-export (float) var pointRadius = 10
+@export var pointRadius = 10
 
 # These will be applied to each spring as they are created
 # Stiffness is not important in the squishy ball; the edges should remain pretty solid.
@@ -25,14 +25,14 @@ export (float) var pointRadius = 10
 var stiffness = 13
 var dampingFactor
 
-export (float) var mass = 1
+@export var mass:float = 1
 
-export (Vector2) var gravity = Vector2(0, 1)
+@export var gravity:Vector2 = Vector2(0, 1)
 
-export (bool) var showLines   = true
-export (bool) var showPoints  = false
-export (bool) var showPolygon = false
-export (bool) var showOutline = true
+@export var showLines   = true
+@export var showPoints  = false
+@export var showPolygon = false
+@export var showOutline = true
 
 # Stores all the points in a 2d array (used in squishy ball, not square one)
 var bodyPoints = []
@@ -63,7 +63,7 @@ func _ready():
 	pxBetweenPoints = radiusInPx*2 * PI / pointsAroundCircle
 	
 	if not showPolygon:
-		$Shape.hide()
+		$Shape3D.hide()
 	
 	# Create and initiate all the points and springs.
 	initiatePoints()
@@ -71,7 +71,7 @@ func _ready():
 
 func _physics_process(delta):
 	if showPolygon:
-		$Shape.polygon = getOutlineArray()
+		$Shape3D.polygon = getOutlineArray()
 	
 	if showOutline:
 		$Outline.points = getOutlineArray()
@@ -100,7 +100,7 @@ func initiatePoints():
 		var nodePosition    = directionVector * radiusInPx
 		
 		# Initiate a new point
-		var newPoint = PhysicsPoint.instance()
+		var newPoint = PhysicsPoint.instantiate()
 		
 		# Put the new point where it should be
 		newPoint.position = nodePosition
@@ -153,7 +153,7 @@ func initiateSprings():
 
 func createSpring(idx:int, targetIdx:int, springName:String, length:float):
 	# Create a new spring and add it as a child
-	var spring = PhysicsSpring.instance()
+	var spring = PhysicsSpring.instantiate()
 	
 	# Connect the spring to this node and the target node, so that it keeps them apart.
 	# The only case where targetIdx won't be idx+1 is when we're on the last point,
@@ -165,7 +165,6 @@ func createSpring(idx:int, targetIdx:int, springName:String, length:float):
 	spring.restLength    = length
 	spring.stiffness     = stiffness
 	spring.dampingFactor = dampingFactor
-	spring.pressureFactor = pressureFactor
 	
 	# This is the squishy ball, so the spring has to adjust the forces according to that
 	spring.isBall = true
@@ -218,8 +217,8 @@ func calculateArea():
 # Refreshes the Polygon2D that we use to represent the shape of the softbody.
 # This simply iterates through each point and adds it to the polygon in order.
 # Very convenient to have that bodyPoints[] array.
-func getOutlineArray() -> PoolVector2Array:
-	var pointArray:PoolVector2Array
+func getOutlineArray() -> PackedVector2Array:
+	var pointArray:PackedVector2Array
 	
 	# Add each point in the "circle" to the array
 	for point in bodyPoints:

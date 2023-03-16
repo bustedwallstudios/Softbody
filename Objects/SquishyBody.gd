@@ -1,58 +1,59 @@
 extends Node2D
 
 # This allows us to create the rigidbodies whenever we need to
-export (PackedScene) var PhysicsPoint
+@export var PhysicsPoint:PackedScene
 
 # This allows us to create the SPRINGS whenever we need to
-export (PackedScene) var PhysicsSpring
+@export var PhysicsSpring:PackedScene
 
 # The amount of balls sideways and vertically
-export (int, 2, 100) var pointsHorz = 6
-export (int, 2, 100) var pointsVert = 10
+@export_range(2, 100) var pointsHorz:int = 6
+@export_range(2, 100) var pointsVert:int = 10
 
-export (int) var sizeInPx = 300
+@export var distanceApart:int = 300
+var sizeInPx:int
 
 # This is set in _ready(), and is calculated by dividing the total size of the shape by 
 # how many points there are across it.
 var orthogSpringLength:float
 
-export (float) var pointRadius = 10
+@export var pointRadius:int = 10
 
 # These will be applied to each spring as they are created
 # Damping factor is only really useful if it is set to exactly the same thing as stiffness,
 # so I have removed the ability to control that from the node.
-export (float, 0, 15) var stiffness = 8
+@export_range(0, 15) var stiffness:float = 8
 # The body works the best if dampingFactor = stiffness (if it's not it explodes basically instantly)
-onready var dampingFactor = stiffness
+@onready var dampingFactor = stiffness
 
 # If plasticity is 1, it will competely deform to any squishing that happens.
 # The lower it is, the less it will conform, and the more it will bounce back.
-export (float, 0, 0.2) var plasticity = 0
+@export_range(0, 0.2) var plasticity:float = 0
 
 # This will gradually return the rest length of the spring to the original length,
 # if it is decreased by the plasticity of the object (think memory foam pillow).
-export (float, 0, 1) var memory = 0
+@export_range(0, 1, 0.01) var memory: float
 
-export (float) var edgeBulges = 0
+@export var edgeBulges:float = 0
 
 # I removed the ability to control this because having it much higher or lower than one results
 # in undesirable behavior
 var mass = 1
 
-export (Vector2) var gravity = Vector2(0, 3)
+@export var gravity:Vector2 = Vector2(0, 3)
 
 # If this is true, the corners will have supporting springs connecting them to the points
 # two points diagonally inwards of the corner.
-export (bool) var includeCornerSupports = false
+@export var includeCornerSupports = false
 
 # If this is false, the points will be a rainbow, if it is true, they will be tinted every frame 
 # based on the forces being applied to them.
-export (bool) var forceTint = false
+@export var forceTint = false
 
-export (bool) var showLines   = true
-export (bool) var showPoints  = false
-export (bool) var showPolygon = false
-export (bool) var showOutline = true
+@export var showLines   = true
+@export var showPoints  = false
+@export var showPolygon = false
+@export var showOutline = true
 
 # idk
 var lengthForThisSpring:float
@@ -61,10 +62,12 @@ var lengthForThisSpring:float
 var bodyPoints = []
 
 func _ready():
-	orthogSpringLength = sizeInPx/(pointsHorz-1)
+	#orthogSpringLength = sizeInPx/(pointsHorz-1)
+	orthogSpringLength = distanceApart
+	sizeInPx = orthogSpringLength*pointsHorz # The total size of the body
 	
 	if not showPolygon:
-		$Shape.hide()
+		$Shape3D.hide()
 	
 	# Create and initiate all the points and springs.
 	initiatePoints()
@@ -78,7 +81,7 @@ func _physics_process(delta):
 	$SquishyBodyCamera.position = centerPointPos
 	
 	if showPolygon:
-		$Shape.polygon = getOutlineArray()
+		$Shape3D.polygon = getOutlineArray()
 	
 	if showOutline:
 		$Outline.points = getOutlineArray()
@@ -91,7 +94,7 @@ func initiatePoints():
 		
 		for x in pointsHorz:
 			# Initiate a new one in memory
-			var newPoint = PhysicsPoint.instance()
+			var newPoint = PhysicsPoint.instantiate()
 			
 			# Put the new point where it should be
 			newPoint.position = Vector2(x*orthogSpringLength, y*orthogSpringLength)
@@ -222,16 +225,16 @@ func initiateSprings():
 		var fullDiagonalLength = sqrt(pow(actualHorzLen, 2) + pow(actualVertLen, 2))
 		
 		# Top two corners
-		createSpring(0,            0, int(pointsHorz/2), int(pointsVert/2), "TL ", fullDiagonalLength/2)
-		createSpring(pointsHorz-1, 0, int(pointsHorz/2), int(pointsVert/2), "TR ", fullDiagonalLength/2)
+		createSpring(0,            0, int(pointsHorz/2.0), int(pointsVert/2.0), "TL ", fullDiagonalLength/2.0)
+		createSpring(pointsHorz-1, 0, int(pointsHorz/2.0), int(pointsVert/2.0), "TR ", fullDiagonalLength/2.0)
 		
 		# Bottom two corners
-		createSpring(0,            pointsVert-1, int(pointsHorz/2), int(pointsVert/2), "TL ", fullDiagonalLength/2)
-		createSpring(pointsHorz-1, pointsVert-1, int(pointsHorz/2), int(pointsVert/2), "TR ", fullDiagonalLength/2)
+		createSpring(0,            pointsVert-1, int(pointsHorz/2.0), int(pointsVert/2.0), "TL ", fullDiagonalLength/2.0)
+		createSpring(pointsHorz-1, pointsVert-1, int(pointsHorz/2.0), int(pointsVert/2.0), "TR ", fullDiagonalLength/2.0)
 
 func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, lengthOverride:float=0):
 	# Create a new spring and add it as a child
-	var spring = PhysicsSpring.instance()
+	var spring = PhysicsSpring.instantiate()
 	
 	# Connect the spring to this node and the target node, so that it keeps them apart.
 	spring.PointA = bodyPoints[y][x]
@@ -259,8 +262,8 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, len
 # which uses eldritch array positioning to get the right points and add them to
 # the array of positions.
 func getOutlineArray():
-	var pointArray:PoolVector2Array = []
-	var colorArray:PoolColorArray   = []
+	var pointArray:PackedVector2Array = []
+	var colorArray:PackedColorArray   = []
 	
 	var currentNode:RigidBody2D
 	
@@ -307,4 +310,4 @@ func markerColor(node:RigidBody2D):
 	return node.get_node("Marker").color
 
 func enableThisCamera():
-	$SquishyBodyCamera.current = true
+	$SquishyBodyCamera.make_current()

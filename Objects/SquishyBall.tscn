@@ -9,7 +9,7 @@ script = ExtResource( 1 )
 PhysicsPoint = ExtResource( 3 )
 PhysicsSpring = ExtResource( 2 )
 
-[node name="Shape" type="Polygon2D" parent="."]
+[node name="Shape3D" type="Polygon2D" parent="."]
 z_index = 1
 color = Color( 0, 1, 0, 1 )
 

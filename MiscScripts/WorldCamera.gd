@@ -1,6 +1,6 @@
 extends Camera2D
 
-export (float, 5, 50) var spd = 20
+@export (float, 5, 50) var spd = 20
 
 func _physics_process(delta):
 	if Input.is_action_pressed("camUp"):

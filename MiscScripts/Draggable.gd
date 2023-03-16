@@ -1,7 +1,7 @@
 extends RigidBody2D
 
 func _integrate_forces(state):
-	if Input.is_action_just_pressed("ui_accept"): # If the player should go back to the start
+	if Input.is_action_just_pressed("smallBall"): # If the player should go back to the start
 		state.transform = Transform2D(self.rotation_degrees, get_global_mouse_position())
 		self.linear_velocity  = Vector2()
 		self.angular_velocity = 0

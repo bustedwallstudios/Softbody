@@ -9,4 +9,4 @@ func _process(_delta):
 	if currentCamera % 2 == 0:
 		$SquishyBody.enableThisCamera()
 	elif currentCamera % 2 == 1:
-		$WorldCamera.current = true
+		$WorldCamera.make_current()
