@@ -1,10 +1,17 @@
 extends Node2D
 
+# 6680ff - The original blue color that I had the line and background as
+
 # This allows us to create the rigidbodies whenever we need to
 @export var PhysicsPoint:PackedScene
 
 # This allows us to create the SPRINGS whenever we need to
 @export var PhysicsSpring:PackedScene
+
+@export var customTexture:CompressedTexture2D
+
+# Allows the speed of the simulation to be changed
+@export_range(0.1, 10) var speedScale:float = 1
 
 # The amount of balls sideways and vertically
 @export_range(2, 100) var pointsHorz:int = 6
@@ -38,9 +45,11 @@ var orthogSpringLength:float
 
 # I removed the ability to control this because having it much higher or lower than one results
 # in undesirable behavior
-var mass = 1
+@export var mass:float = 1.0
 
 @export var gravity:Vector2 = Vector2(0, 3)
+
+@export var cutToCircle = false
 
 # If this is true, the corners will have supporting springs connecting them to the points
 # two points diagonally inwards of the corner.
@@ -58,33 +67,45 @@ var mass = 1
 # idk
 var lengthForThisSpring:float
 
-# Stores all the points in a 2d array (Currently unused I think)
 var bodyPoints = []
 
+var centerPointPos:Vector2
+
 func _ready():
+	$Shape3D.texture = customTexture
+	
+	# Change the simulation speed of the engine
+	Engine.time_scale = speedScale
+	
 	#orthogSpringLength = sizeInPx/(pointsHorz-1)
 	orthogSpringLength = distanceApart
 	sizeInPx = orthogSpringLength*pointsHorz # The total size of the body
+	
+	$Outline.width = pointRadius*2
 	
 	if not showPolygon:
 		$Shape3D.hide()
 	
 	# Create and initiate all the points and springs.
 	initiatePoints()
+	addPointExceptions()
 	initiateSprings()
 
 # warning-ignore:unused_argument
-func _physics_process(delta):
+func _physics_process(_delta):
 	# The position of the point closest to the center of the squishyBody.
-	var centerPointPos = get_node(bodyPoints[pointsVert/2][pointsHorz/2]).position
+	centerPointPos = get_node(bodyPoints[pointsVert/2][pointsHorz/2]).position
 	# Put the camera at the correct position.
 	$SquishyBodyCamera.position = centerPointPos
 	
 	if showPolygon:
-		$Shape3D.polygon = getOutlineArray()
+		var outlineArray = getOutlineArray(false)
+		var uvArray:PackedVector2Array = getUVArray()
+		$Shape3D.polygon = outlineArray
+		$Shape3D.uv      = uvArray
 	
 	if showOutline:
-		$Outline.points = getOutlineArray()
+		$Outline.points = getOutlineArray(true)
 
 # Create the correct amount of rigidbodies for all the points,
 # and put them in the correct positions
@@ -93,6 +114,16 @@ func initiatePoints():
 		bodyPoints.append([]) # Add another layer
 		
 		for x in pointsHorz:
+			
+			# If the corners should be cut off, to make it circle-shaped
+			if cutToCircle:
+				# Check if the point is corner-enough to be cut off
+				if shouldBeCutOut(x, y):
+					# If it is, create a fake point in that space, and then don't
+					# create the regular one
+					bodyPoints[y].append(false)
+					continue
+			
 			# Initiate a new one in memory
 			var newPoint = PhysicsPoint.instantiate()
 			
@@ -119,10 +150,35 @@ func initiatePoints():
 			
 			# If we are hiding the points, we hide the point.
 			if not showPoints:
-				newPoint.hide()
+				newPoint.modulate.a = 0
 			
 			# And add it to the array so we can easily remember which are which
 			bodyPoints[y].append(newPoint.get_path())
+
+func addPointExceptions():
+	for layer in bodyPoints:
+		for point in layer:
+			
+			for layer2 in bodyPoints:
+				for point2 in layer2:
+					get_node(point).add_collision_exception_with(get_node(point2))
+
+func shouldBeCutOut(x, y):
+	var centerPos = Vector2((pointsHorz/2.0)-0.5, (pointsVert/2.0)-0.5)
+	
+	print(centerPos)
+	
+	var xDist = abs(x-centerPos.x)
+	var yDist = abs(y-centerPos.y)
+	
+	var distanceToCenter = pythag(xDist, yDist)
+	
+	# This is the "radius" of the square
+	var radius = (pointsHorz)/2.0
+	
+	if distanceToCenter > radius:
+		return true
+	return false
 
 func initiateSprings():
 	# We need the diagonal length between the points for the diagonal springs
@@ -236,9 +292,21 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, len
 	# Create a new spring and add it as a child
 	var spring = PhysicsSpring.instantiate()
 	
+	# Get the nodes that are in these positions. If the point isn't there (because
+	# it was cut out to make it a circle)
+	var pA = bodyPoints[y][x]
+	var pB = bodyPoints[targetY][targetX]
+	
+	# If the point doesn't exist, don't run anything (W)
+	if typeof(pA) == 1 or typeof(pB) == 1:
+		return
+	
 	# Connect the spring to this node and the target node, so that it keeps them apart.
-	spring.PointA = bodyPoints[y][x]
-	spring.PointB = bodyPoints[targetY][targetX]
+	spring.PointA = pA
+	spring.PointB = pB
+	
+	# Allow the springs to adjust their calculations based on the speed of the simulation
+	spring.speedScale = speedScale
 	
 	# Set the physical properties of the spring
 	if lengthOverride == 0:
@@ -261,45 +329,99 @@ func createSpring(x:int, y:int, targetX:int, targetY:int, springName:String, len
 # Refreshes the Polygon2D or Line2D that we use to represent the shape of the softbody,
 # which uses eldritch array positioning to get the right points and add them to
 # the array of positions.
-func getOutlineArray():
+func getOutlineArray(addFirstPointAgain:bool) -> Array:
 	var pointArray:PackedVector2Array = []
-	var colorArray:PackedColorArray   = []
 	
 	var currentNode:RigidBody2D
 	
+	# Top
 	for i in range(0, pointsHorz):
 		currentNode = get_node(bodyPoints[0][i])
-		pointArray.append(currentNode.position)
-		colorArray.append(markerColor(currentNode))
+		
+		var pos = currentNode.position
+		
+		pointArray.append(pos)
 	
+	# Right
 	for i in range(0, pointsVert-2):
 		currentNode = get_node(bodyPoints[i+1][pointsHorz-1])
-		pointArray.append(currentNode.position)
-		colorArray.append(markerColor(currentNode))
+		
+		var pos = currentNode.position
+		
+		pointArray.append(pos)
 	
+	# Bottom
 	var backwards = []
 	for i in range(0, pointsHorz):
 		backwards.insert(0, i)
 	
 	for i in backwards:
 		currentNode = get_node(bodyPoints[pointsVert-1][i])
-		pointArray.append(currentNode.position)
-		colorArray.append(markerColor(currentNode))
+		
+		var pos = currentNode.position
+		
+		pointArray.append(pos)
 	
+	# Left
 	var cornerlessBackwards = []
 	for i in range(1, pointsVert-1):
 		cornerlessBackwards.insert(0, i)
 	
 	for i in cornerlessBackwards:
 		currentNode = get_node(bodyPoints[i][0])
-		pointArray.append(currentNode.position)
-		colorArray.append(markerColor(currentNode))
+		
+		var pos = currentNode.position
+		
+		pointArray.append(pos)
 	
-	# Append the top right point again, to connect the outline back to itself.
-	# This will fix the outline, and will have no effect on the Polygon2D.
-	pointArray.append(get_node(bodyPoints[0][0]).position)
+	# If this array is for the line, this will be true
+	if addFirstPointAgain:
+		# Append the top right point again, to connect the outline back to itself.
+		# This will fix the outline, and will have no effect on the Polygon2D.
+		pointArray.append(get_node(bodyPoints[0][0]).position)
 	
-	return(pointArray)
+	return pointArray
+
+func getUVArray() -> PackedVector2Array:
+	var xDist:float = float(customTexture.get_size().x)
+	var yDist:float = float(customTexture.get_size().y)
+	
+	var pointArray:PackedVector2Array = []
+	
+	# Top
+	for i in range(0, pointsHorz):
+		# Number of pixels that have been covered so far
+		var progress = xDist * (i/float(pointsHorz-1))
+		
+		pointArray.append(Vector2(progress, 0))
+	
+	# Right side
+	# (don't do the top and bottom ones)
+	for i in range(1, pointsVert - 1):
+		# Number of pixels that have been covered so far
+		var progress = yDist * (i/float(pointsVert-1))
+		
+		pointArray.append(Vector2(xDist, progress))
+	
+	# Bottom
+	for i in range(-pointsHorz+1, 1):
+		i = -i # so i can use the range() backwards
+		
+		# Number of pixels that have been covered so far
+		var progress = xDist * (i/float(pointsHorz-1))
+		
+		pointArray.append(Vector2(progress, yDist))
+	
+	# Left side (don't do the top and bottom ones)
+	for i in range(-pointsVert+2, 0):
+		i = -i # so i can use the range() backwards
+		
+		# Number of pixels that have been covered so far
+		var progress = yDist * (i/float(pointsVert-1))
+		
+		pointArray.append(Vector2(0, progress))
+	
+	return pointArray
 
 # Do the pythagorean theorem on s1 and s2, and return the hypotenuse
 func pythag(s1:float, s2:float) -> float:

@@ -1,4 +1,10 @@
 res://default_env.tres
 res://2dWorld.tscn
+res://MiscScripts/WorldCamera.gd
+res://Objects/PhysicsPoint.tscn
 res://Objects/SquishyBody.tscn
 res://Objects/SquishyBody.gd
+res://Objects/PhysicsPoint.gd
+res://MiscScripts/Rotate.gd
+res://MiscScripts/Move.gd
+res://MiscScripts/picle.gdshader

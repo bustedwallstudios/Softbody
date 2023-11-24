@@ -1,7 +1,11 @@
-extends StaticBody2D
+extends RigidBody2D
 
-@export (float) var degreesPerFrame = 0.1
+@export var rotationalForce:float = 5
+
+var t = 0
 
 # warning-ignore:unused_argument
-func _process(delta):
-	rotation_degrees += degreesPerFrame
+func _physics_process(delta):
+	t += delta*5
+	self.angular_velocity = sin(t) * 2
+

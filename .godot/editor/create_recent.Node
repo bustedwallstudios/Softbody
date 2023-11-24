@@ -1,4 +1,9 @@
-CollisionShape2D
-Polygon2D
-CollisionPolygon2D
 StaticBody2D
+CharacterBody2D
+Node2D
+Node
+PinJoint2D
+RigidBody2D
+Polygon2D
+CollisionShape2D
+CollisionPolygon2D

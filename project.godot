@@ -12,7 +12,7 @@ config_version=5
 
 config/name="SoftbodyTest"
 run/main_scene="res://2dWorld.tscn"
-config/features=PackedStringArray("4.0")
+config/features=PackedStringArray("4.1")
 config/icon="res://icon.png"
 
 [debug]

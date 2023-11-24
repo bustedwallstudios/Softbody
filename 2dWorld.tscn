@@ -1,10 +1,13 @@
-[gd_scene load_steps=9 format=3 uid="uid://c4f4lwmde3tn8"]
+[gd_scene load_steps=14 format=3 uid="uid://c4f4lwmde3tn8"]
 
 [ext_resource type="Script" path="res://MiscScripts/World.gd" id="1"]
 [ext_resource type="Script" path="res://MiscScripts/Draggable2.gd" id="2"]
 [ext_resource type="Script" path="res://MiscScripts/Draggable.gd" id="3"]
+[ext_resource type="Script" path="res://MiscScripts/Rotate.gd" id="5_lu0kl"]
 [ext_resource type="Script" path="res://MiscScripts/WorldCamera.gd" id="6"]
 [ext_resource type="PackedScene" uid="uid://dkpycf1pnklng" path="res://Objects/SquishyBody.tscn" id="6_4masc"]
+[ext_resource type="Script" path="res://MiscScripts/Move.gd" id="6_5emu8"]
+[ext_resource type="Texture2D" uid="uid://dhbflq4qm2pvr" path="res://img/jely.png" id="8_78r4a"]
 
 [sub_resource type="CircleShape2D" id="2"]
 radius = 91.7878
@@ -15,19 +18,24 @@ radius = 206.526
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ulm6s"]
 size = Vector2(894, 54)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hffs4"]
+size = Vector2(1019, 56)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_aoks5"]
+size = Vector2(1292, 56)
+
 [node name="World" type="Node2D"]
 script = ExtResource("1")
 
 [node name="WorldCamera" type="Camera2D" parent="."]
-position = Vector2(0, -1000)
-zoom = Vector2(0.28, 0.28)
+position = Vector2(-885, 44)
+zoom = Vector2(0.25, 0.25)
 script = ExtResource("6")
 
-[node name="World" type="Node2D" parent="."]
+[node name="Geometries" type="Node2D" parent="."]
 
-[node name="Ball" type="RigidBody2D" parent="World"]
-position = Vector2(-1961, -972)
-collision_layer = 3
+[node name="Ball" type="RigidBody2D" parent="Geometries"]
+position = Vector2(-3066, -1270)
 collision_mask = 3
 input_pickable = true
 mass = 5.0
@@ -35,17 +43,16 @@ can_sleep = false
 script = ExtResource("3")
 metadata/_edit_group_ = true
 
-[node name="GroundCollision" type="CollisionShape2D" parent="World/Ball"]
+[node name="GroundCollision" type="CollisionShape2D" parent="Geometries/Ball"]
 shape = SubResource("2")
 
-[node name="GroundShape" type="Polygon2D" parent="World/Ball"]
+[node name="GroundShape" type="Polygon2D" parent="Geometries/Ball"]
 position = Vector2(0, -8.5)
 scale = Vector2(20, 20)
 polygon = PackedVector2Array(-4.45, 1.625, -4.6, 0.425001, -4.45, -0.775, -4, -1.875, -3.25, -2.825, -2.3, -3.575, -1.2, -4.025, -0.0499992, -4.175, 1.2, -4.025, 2.3, -3.575, 3.25, -2.825, 3.56939, -2.47059, 4, -1.875, 4.45, -0.775, 4.6, 0.375, 4.45, 1.625, 4, 2.725, 3.25, 3.675, 2.3, 4.425, 1.2, 4.875, 0, 5.025, -1.15, 4.875, -2.3, 4.375, -3.25, 3.675, -4, 2.725)
 
-[node name="BigBall" type="RigidBody2D" parent="World"]
-position = Vector2(-2205, -674)
-collision_layer = 3
+[node name="BigBall" type="RigidBody2D" parent="Geometries"]
+position = Vector2(-6237, -1645)
 collision_mask = 3
 input_pickable = true
 mass = 25.0
@@ -53,78 +60,322 @@ can_sleep = false
 script = ExtResource("2")
 metadata/_edit_group_ = true
 
-[node name="GroundCollision" type="CollisionShape2D" parent="World/BigBall"]
+[node name="GroundCollision" type="CollisionShape2D" parent="Geometries/BigBall"]
 shape = SubResource("5")
 
-[node name="GroundShape" type="Polygon2D" parent="World/BigBall"]
+[node name="GroundShape" type="Polygon2D" parent="Geometries/BigBall"]
 position = Vector2(0, -20.5)
 scale = Vector2(44.924, 44.925)
+color = Color(0.419608, 1, 0.427451, 1)
 polygon = PackedVector2Array(-4.45, 1.625, -4.6, 0.425001, -4.45, -0.775, -4, -1.875, -3.25, -2.825, -2.3, -3.575, -1.2, -4.025, -0.0499992, -4.175, 1.2, -4.025, 2.3, -3.575, 3.25, -2.825, 3.56939, -2.47059, 4, -1.875, 4.45, -0.775, 4.6, 0.375, 4.45, 1.625, 4, 2.725, 3.25, 3.675, 2.3, 4.425, 1.2, 4.875, 0, 5.025, -1.15, 4.875, -2.3, 4.375, -3.25, 3.675, -4, 2.725)
 
-[node name="MainGround" type="StaticBody2D" parent="World"]
+[node name="MainGround" type="StaticBody2D" parent="Geometries"]
 scale = Vector2(20, 1)
 metadata/_edit_group_ = true
 
-[node name="Collision" type="CollisionShape2D" parent="World/MainGround"]
+[node name="Collision" type="CollisionShape2D" parent="Geometries/MainGround"]
 shape = SubResource("RectangleShape2D_ulm6s")
 
-[node name="Shape" type="Polygon2D" parent="World/MainGround"]
+[node name="Shape" type="Polygon2D" parent="Geometries/MainGround"]
 polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
 
-[node name="GroundPiece2" type="StaticBody2D" parent="World"]
-position = Vector2(-561, -391)
-rotation = 2.01586
+[node name="GroundPiece2" type="StaticBody2D" parent="Geometries"]
+position = Vector2(-3105, -1701)
+rotation = 0.417044
 metadata/_edit_group_ = true
 
-[node name="Collision" type="CollisionShape2D" parent="World/GroundPiece2"]
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece2"]
 shape = SubResource("RectangleShape2D_ulm6s")
 
-[node name="Shape" type="Polygon2D" parent="World/GroundPiece2"]
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece2"]
 polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
 
-[node name="GroundPiece3" type="StaticBody2D" parent="World"]
-position = Vector2(-1958, -383)
+[node name="GroundPiece3" type="StaticBody2D" parent="Geometries"]
+position = Vector2(-3946, -1987)
+rotation = 0.228638
 metadata/_edit_group_ = true
 
-[node name="Collision" type="CollisionShape2D" parent="World/GroundPiece3"]
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece3"]
 shape = SubResource("RectangleShape2D_ulm6s")
 
-[node name="Shape" type="Polygon2D" parent="World/GroundPiece3"]
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece3"]
 polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
 
-[node name="GroundPiece4" type="StaticBody2D" parent="World"]
-position = Vector2(1140, -222)
-rotation = 1.5708
+[node name="GroundPiece4" type="StaticBody2D" parent="Geometries"]
+position = Vector2(-4926, -1301)
+rotation = 1.57079
+scale = Vector2(2, 1)
 metadata/_edit_group_ = true
 
-[node name="Collision" type="CollisionShape2D" parent="World/GroundPiece4"]
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece4"]
 shape = SubResource("RectangleShape2D_ulm6s")
 
-[node name="Shape" type="Polygon2D" parent="World/GroundPiece4"]
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece4"]
 polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
 
-[node name="GroundPiece5" type="StaticBody2D" parent="World"]
-position = Vector2(-1120, -193)
-rotation = 0.445254
+[node name="GroundPiece6" type="StaticBody2D" parent="Geometries"]
+position = Vector2(-2332, -1295)
+rotation = 0.523598
 metadata/_edit_group_ = true
 
-[node name="Collision" type="CollisionShape2D" parent="World/GroundPiece5"]
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece6"]
 shape = SubResource("RectangleShape2D_ulm6s")
 
-[node name="Shape" type="Polygon2D" parent="World/GroundPiece5"]
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece6"]
 polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
 
-[node name="SquishyBody" parent="." instance=ExtResource("6_4masc")]
-position = Vector2(-1276, -1233)
-rotation = 0.445059
-pointsHorz = 14
-pointsVert = 14
-distanceApart = 62
-pointRadius = 15
+[node name="GroundPiece5" type="StaticBody2D" parent="Geometries"]
+position = Vector2(-1660, -745)
+rotation = 0.829031
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece5"]
+shape = SubResource("RectangleShape2D_ulm6s")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece5"]
+polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
+
+[node name="GroundPiece7" type="StaticBody2D" parent="Geometries"]
+position = Vector2(-1186, -216)
+rotation = 0.829031
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece7"]
+shape = SubResource("RectangleShape2D_ulm6s")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece7"]
+polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
+
+[node name="Ball2" type="RigidBody2D" parent="Geometries"]
+position = Vector2(2971, -1461)
+collision_mask = 3
+input_pickable = true
+mass = 5.0
+can_sleep = false
+script = ExtResource("3")
+metadata/_edit_group_ = true
+
+[node name="GroundCollision" type="CollisionShape2D" parent="Geometries/Ball2"]
+shape = SubResource("2")
+
+[node name="GroundShape" type="Polygon2D" parent="Geometries/Ball2"]
+position = Vector2(0, -8.5)
+scale = Vector2(20, 20)
+polygon = PackedVector2Array(-4.45, 1.625, -4.6, 0.425001, -4.45, -0.775, -4, -1.875, -3.25, -2.825, -2.3, -3.575, -1.2, -4.025, -0.0499992, -4.175, 1.2, -4.025, 2.3, -3.575, 3.25, -2.825, 3.56939, -2.47059, 4, -1.875, 4.45, -0.775, 4.6, 0.375, 4.45, 1.625, 4, 2.725, 3.25, 3.675, 2.3, 4.425, 1.2, 4.875, 0, 5.025, -1.15, 4.875, -2.3, 4.375, -3.25, 3.675, -4, 2.725)
+
+[node name="GroundPiece8" type="StaticBody2D" parent="Geometries"]
+position = Vector2(2136, -1549)
+rotation = -0.523598
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece8"]
+shape = SubResource("RectangleShape2D_ulm6s")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece8"]
+polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
+
+[node name="GroundPiece9" type="StaticBody2D" parent="Geometries"]
+position = Vector2(1345, -928)
+rotation = -0.785397
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece9"]
+shape = SubResource("RectangleShape2D_ulm6s")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece9"]
+polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
+
+[node name="GroundPiece10" type="StaticBody2D" parent="Geometries"]
+position = Vector2(2939, -2020)
+rotation = -0.523598
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece10"]
+shape = SubResource("RectangleShape2D_ulm6s")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece10"]
+polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
+
+[node name="GroundPiece11" type="StaticBody2D" parent="Geometries"]
+position = Vector2(3792, -2367)
+rotation = -0.261799
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece11"]
+shape = SubResource("RectangleShape2D_ulm6s")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece11"]
+polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
+
+[node name="GroundPiece12" type="StaticBody2D" parent="Geometries"]
+position = Vector2(638, -387)
+rotation = -0.523598
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/GroundPiece12"]
+shape = SubResource("RectangleShape2D_ulm6s")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/GroundPiece12"]
+polygon = PackedVector2Array(-447, -27, 447, -27, 447, 27, -447, 27)
+
+[node name="RotatingPiece" type="Node2D" parent="Geometries"]
+position = Vector2(1946, -2804)
+rotation = 4.18878
+metadata/_edit_group_ = true
+
+[node name="Body" type="RigidBody2D" parent="Geometries/RotatingPiece"]
+mass = 100.0
+script = ExtResource("5_lu0kl")
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/RotatingPiece/Body"]
+position = Vector2(-482.5, 0.910034)
+shape = SubResource("RectangleShape2D_hffs4")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/RotatingPiece/Body"]
+polygon = PackedVector2Array(-992, -27.0001, 27, -27.0001, 27, 28.9999, -992, 28.9999)
+
+[node name="RotatingPin" type="PinJoint2D" parent="Geometries/RotatingPiece"]
+node_a = NodePath("../Body")
+node_b = NodePath("../../MainGround")
+
+[node name="RotatingPiece2" type="Node2D" parent="Geometries"]
+position = Vector2(-2848, -2934)
+rotation = -1.0472
+metadata/_edit_group_ = true
+
+[node name="Body" type="RigidBody2D" parent="Geometries/RotatingPiece2"]
+mass = 100.0
+script = ExtResource("5_lu0kl")
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/RotatingPiece2/Body"]
+position = Vector2(-482.5, 0.910034)
+shape = SubResource("RectangleShape2D_hffs4")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/RotatingPiece2/Body"]
+polygon = PackedVector2Array(-992, -27.0001, 27, -27.0001, 27, 28.9999, -992, 28.9999)
+
+[node name="RotatingPin" type="PinJoint2D" parent="Geometries/RotatingPiece2"]
+node_a = NodePath("../Body")
+node_b = NodePath("../../MainGround")
+
+[node name="MovingPiece" type="Node2D" parent="Geometries"]
+position = Vector2(549, -344)
+metadata/_edit_group_ = true
+
+[node name="Body" type="StaticBody2D" parent="Geometries/MovingPiece"]
+script = ExtResource("6_5emu8")
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/MovingPiece/Body"]
+position = Vector2(-199.181, 0.910034)
+shape = SubResource("RectangleShape2D_aoks5")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/MovingPiece/Body"]
+polygon = PackedVector2Array(-845, -27, 447, -27, 447, 29, -845, 29)
+
+[node name="MovingPiece2" type="Node2D" parent="Geometries"]
+position = Vector2(-741, -337)
+metadata/_edit_group_ = true
+
+[node name="Body" type="StaticBody2D" parent="Geometries/MovingPiece2"]
+script = ExtResource("6_5emu8")
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/MovingPiece2/Body"]
+position = Vector2(-199.181, 0.910034)
+shape = SubResource("RectangleShape2D_aoks5")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/MovingPiece2/Body"]
+polygon = PackedVector2Array(-845, -27, 447, -27, 447, 29, -845, 29)
+
+[node name="MovingPiece3" type="Node2D" parent="Geometries"]
+position = Vector2(856, 1791)
+metadata/_edit_group_ = true
+
+[node name="Body" type="StaticBody2D" parent="Geometries/MovingPiece3"]
+script = ExtResource("6_5emu8")
+sinCos = false
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/MovingPiece3/Body"]
+position = Vector2(-199.181, 0.910034)
+shape = SubResource("RectangleShape2D_aoks5")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/MovingPiece3/Body"]
+polygon = PackedVector2Array(-845, -27, 447, -27, 447, 29, -845, 29)
+
+[node name="MovingPiece4" type="Node2D" parent="Geometries"]
+position = Vector2(-421, 1794)
+metadata/_edit_group_ = true
+
+[node name="Body" type="StaticBody2D" parent="Geometries/MovingPiece4"]
+script = ExtResource("6_5emu8")
+sinCos = false
+metadata/_edit_group_ = true
+
+[node name="Collision" type="CollisionShape2D" parent="Geometries/MovingPiece4/Body"]
+position = Vector2(-199.181, 0.910034)
+shape = SubResource("RectangleShape2D_aoks5")
+
+[node name="Shape" type="Polygon2D" parent="Geometries/MovingPiece4/Body"]
+polygon = PackedVector2Array(-845, -27, 447, -27, 447, 29, -845, 29)
+
+[node name="SquishyBody2" parent="." instance=ExtResource("6_4masc")]
+modulate = Color(0.533333, 0, 1, 1)
+position = Vector2(1194, -2876)
+customTexture = ExtResource("8_78r4a")
+pointsHorz = 4
+pointsVert = 4
+distanceApart = 150
+pointRadius = 75
 stiffness = 15.0
-gravity = Vector2(0, 6.579)
-showPoints = true
+gravity = Vector2(0, 5)
+forceTint = true
+showLines = false
+showPolygon = true
 showOutline = false
 
-[connection signal="input_event" from="World/Ball" to="World/Ball" method="inputEvent"]
-[connection signal="input_event" from="World/BigBall" to="World/BigBall" method="inputEvent"]
+[node name="SquishyBody3" parent="." instance=ExtResource("6_4masc")]
+position = Vector2(-2712, -2678)
+customTexture = ExtResource("8_78r4a")
+pointsHorz = 5
+pointsVert = 5
+distanceApart = 150
+pointRadius = 75
+stiffness = 15.0
+gravity = Vector2(0, 5)
+forceTint = true
+showLines = false
+showPolygon = true
+showOutline = false
+
+[node name="SquishyBody4" parent="." instance=ExtResource("6_4masc")]
+modulate = Color(0, 1, 1, 1)
+position = Vector2(335, -1900)
+customTexture = ExtResource("8_78r4a")
+pointsHorz = 3
+pointsVert = 3
+distanceApart = 150
+pointRadius = 75
+stiffness = 15.0
+gravity = Vector2(0, 5)
+forceTint = true
+showLines = false
+showPolygon = true
+showOutline = false
+
+[node name="SquishyBody5" parent="." instance=ExtResource("6_4masc")]
+position = Vector2(-766, -2639)
+customTexture = ExtResource("8_78r4a")
+pointsHorz = 5
+pointsVert = 5
+distanceApart = 150
+pointRadius = 75
+stiffness = 15.0
+gravity = Vector2(0, 5)
+forceTint = true
+showLines = false
+showPolygon = true
+showOutline = false

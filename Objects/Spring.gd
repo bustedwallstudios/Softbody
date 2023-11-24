@@ -8,6 +8,9 @@ var hasConvertedStupidNodePaths = false
 var PointA
 var PointB
 
+# Calculations based on delta will need to be changed based on this as well
+var speedScale
+
 # stiffness and dampingFactor are both set by the squishyBody itself.
 var stiffness:float
 var dampingFactor:float
@@ -73,8 +76,8 @@ func _physics_process(delta):
 	# This is used in hookesLawToFindForce() and findPressureForce()
 	currentLength = (PointB.global_position - PointA.global_position).length()
 	
-	var springForce:float  = hookesLawToFindForce() * (delta*60)
-	var dampingForce:float = findDampingForce()     * (delta*60)
+	var springForce:float  = hookesLawToFindForce() * (delta*60) / speedScale
+	var dampingForce:float = findDampingForce()     * (delta*60) / speedScale
 	
 	var totalForce:float = springForce + dampingForce
 	

@@ -1,25 +1,37 @@
-[gd_scene load_steps=4 format=3 uid="uid://dkpycf1pnklng"]
+[gd_scene load_steps=5 format=3 uid="uid://dkpycf1pnklng"]
 
 [ext_resource type="PackedScene" uid="uid://bgtn2fou328kr" path="res://Objects/PhysicsPoint.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://Objects/Spring.tscn" id="2"]
 [ext_resource type="Script" path="res://Objects/SquishyBody.gd" id="3"]
+[ext_resource type="Texture2D" uid="uid://j8k3h0ptnw7g" path="res://icon.png" id="4_aqywg"]
 
 [node name="SquishyBody" type="Node2D"]
 script = ExtResource("3")
 PhysicsPoint = ExtResource("1")
 PhysicsSpring = ExtResource("2")
-
-[node name="Shape3D" type="Polygon2D" parent="."]
-z_index = 1
-color = Color(0.4, 0.501961, 1, 1)
+metadata/_edit_horizontal_guides_ = [-45.0, 45.0]
+metadata/_edit_vertical_guides_ = [-45.0, 45.0]
 
 [node name="Outline" type="Line2D" parent="."]
 z_index = 1
 width = 20.0
-default_color = Color(0.4, 0.501961, 1, 1)
 joint_mode = 2
 begin_cap_mode = 2
 end_cap_mode = 2
 
+[node name="Shape3D" type="Polygon2D" parent="."]
+z_index = 2
+texture_filter = 1
+texture = ExtResource("4_aqywg")
+polygon = PackedVector2Array(0.502808, -1.47058, 320, 1, 601, 0, 599.032, 597.059, 0.502808, 601.471)
+uv = PackedVector2Array(0, 0, 300, 0, 600, 0, 600, 600, 0, 601.471)
+
 [node name="SquishyBodyCamera" type="Camera2D" parent="."]
-zoom = Vector2(0.5, 0.5)
+zoom = Vector2(0.25, 0.25)
+
+[node name="Indicator" type="Polygon2D" parent="."]
+z_index = 4096
+z_as_relative = false
+scale = Vector2(5, 5)
+color = Color(0, 1, 0, 1)
+polygon = PackedVector2Array(0, -9, 9, 0, 0, 9, -9, 0)
