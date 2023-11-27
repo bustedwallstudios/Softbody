@@ -10,7 +10,6 @@ polygon = PackedVector2Array(-50, -50, 50, -50, 50, 50, -50, 50)
 script = ExtResource("1_8525b")
 physicsPointScene = ExtResource("2_7ib2i")
 physicsSpringScene = ExtResource("3_o1ckx")
-displayBoundingBox = true
 metadata/_edit_horizontal_guides_ = [50.0, -50.0]
 metadata/_edit_vertical_guides_ = [50.0, -50.0]
 

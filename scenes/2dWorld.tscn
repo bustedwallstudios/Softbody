@@ -316,4 +316,4 @@ position = Vector2(-198, -1870)
 polygon = PackedVector2Array(405, 168, 400, 682, 86, 677, -328, 691, -665, 686, -670, 163, -466, 420, -285, 154, -114, 420, 62, 149, 215, 406)
 gravity = 2.0
 stiffness = 11.568
-displayBoundingBox = false
+drawBoundingShapes = true

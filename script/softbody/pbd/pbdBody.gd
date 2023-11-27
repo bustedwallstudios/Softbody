@@ -22,14 +22,15 @@ extends Polygon2D
 # Show the lines representing the spring constraints
 @export var showLines = true
 
-@export var displayBoundingBox:bool = false
+@export var drawBoundingShapes:bool = false
 
-var allParticles:Array = []
+var allParticles:Array = [] # The physicsbody particle nodes
+var allPoints:Array    = [] # The positions of those nodes
 
 var constraintsList:Array = []
 
 func _ready():
-	var triangulation = await delaunayTriangulation(self.polygon)
+	var triangulation = delaunayTriangulation(self.polygon)
 	var edges         = getAllEdgesFrom(triangulation)
 	var points        = self.polygon
 	
@@ -38,11 +39,9 @@ func _ready():
 		
 		physicsPoint.gravity_scale = gravity
 		
-		
 		# Scale the point size and marker size appropriately
 		physicsPoint.get_node("Hitbox").shape.radius = pointRadius
 		physicsPoint.get_node("Marker").scale = Vector2(pointRadius/10, pointRadius/10) # /10 because it is already 10 pixels across
-		
 		
 		physicsPoint.position = pos
 		
@@ -57,12 +56,33 @@ func _ready():
 		var p2 = getParticleNodeAt(edge[1])
 		createSpring(p1, p2)
 	
-	if not displayBoundingBox:
+	if not drawBoundingShapes:
 		$BoundingBoxLine.clear_points()
 		$BoundingBoxLine.hide()
 		
 		$SuperTriangleLine.clear_points()
 		$SuperTriangleLine.hide()
+
+func _physics_process(Δt):
+	# Display the bounding box and triangle
+	if drawBoundingShapes:
+		allPoints = []
+		for i in allParticles:
+			allPoints.append(i.position)
+		var box = getBoundingBox(allPoints)
+		var tri = getSuperTriangle(box)
+
+#	var Δts = Δt/substeps
+#
+#	# Calculate for each substep
+#	for n in range(0, substeps):
+#
+#		for particle in allParticles:
+#			particle.linear_velocity.y += Δts * gravity
+#			particle.prevPos     = particle.position
+#			particle.position   += Δts * particle.linear_velocity
+#
+#		for 
 
 func addPointExceptions():
 	for point in allParticles:
@@ -100,20 +120,6 @@ func createSpring(pA, pB):
 	spring.hideLine = !showLines
 	
 	add_child(spring)
-
-#func _physics_process(Δt):
-#
-#	var Δts = Δt/substeps
-#
-#	# Calculate for each substep
-#	for n in range(0, substeps):
-#
-#		for particle in allParticles:
-#			particle.linear_velocity.y += Δts * gravity
-#			particle.prevPos     = particle.position
-#			particle.position   += Δts * particle.linear_velocity
-#
-#		for 
 
 func delaunayTriangulation(points:PackedVector2Array) -> Array:
 	# The list of current triangles that are inside the polygon. Starts at zero,
@@ -373,7 +379,7 @@ func getBoundingBox(points, adjusted:bool=true) -> Rect2:
 	
 	var boundingBox:Rect2 = Rect2(minX, minY, w, h)
 	
-	if displayBoundingBox: showBoundingBox(boundingBox)
+	if drawBoundingShapes: drawBoundingBox(boundingBox)
 	
 	#print("Area of bounding box: ", w*h)
 	
@@ -389,7 +395,7 @@ func getSuperTriangle(box:Rect2):
 	
 	var superTriangle:Array = [p1, p2, p3]
 	
-	if displayBoundingBox: showSuperTriangle(superTriangle)
+	if drawBoundingShapes: drawSuperTriangle(superTriangle)
 	
 	#print("Area of super triangle: ", calculateTriangleArea(p1, p2, p3))
 	
@@ -410,7 +416,7 @@ func verifyCCW(triangle:Array) -> bool:
 	
 	return (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y) > 0
 
-func showBoundingBox(box:Rect2):
+func drawBoundingBox(box:Rect2):
 	$BoundingBoxLine.clear_points()
 	
 	$BoundingBoxLine.add_point(box.position)
@@ -419,7 +425,7 @@ func showBoundingBox(box:Rect2):
 	$BoundingBoxLine.add_point(box.position + Vector2(0, box.size.y))
 	$BoundingBoxLine.add_point(box.position)
 
-func showSuperTriangle(tri:Array):
+func drawSuperTriangle(tri:Array):
 	$SuperTriangleLine.clear_points()
 	
 	$SuperTriangleLine.add_point(tri[0])
