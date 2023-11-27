@@ -17,14 +17,14 @@ extends Node2D
 @export_range(2, 100) var pointsHorz:int = 6
 @export_range(2, 100) var pointsVert:int = 10
 
-@export var distanceApart:int = 300
+@export var distanceApart:int = 150
 var sizeInPx:int
 
 # This is set in _ready(), and is calculated by dividing the total size of the shape by 
 # how many points there are across it.
 var orthogSpringLength:float
 
-@export var pointRadius:int = 10
+@export var pointRadius:int = 75
 
 # These will be applied to each spring as they are created
 # Damping factor is only really useful if it is set to exactly the same thing as stiffness,
@@ -45,9 +45,9 @@ var orthogSpringLength:float
 
 # I removed the ability to control this because having it much higher or lower than one results
 # in undesirable behavior
-@export var mass:float = 1.0
+var mass:float = 1.0
 
-@export var gravity:Vector2 = Vector2(0, 3)
+@export var gravity:Vector2 = Vector2(0, 8)
 
 @export var cutToCircle = false
 
@@ -60,9 +60,9 @@ var orthogSpringLength:float
 @export var forceTint = false
 
 @export var showLines   = true
-@export var showPoints  = false
+@export var showPoints  = true
 @export var showPolygon = false
-@export var showOutline = true
+@export var showOutline = false
 
 # idk
 var lengthForThisSpring:float
@@ -83,7 +83,7 @@ func _ready():
 	
 	$Outline.width = pointRadius*2
 	
-	if not showPolygon:
+	if not showPolygon or not customTexture:
 		$Shape3D.hide()
 	
 	# Create and initiate all the points and springs.
@@ -98,7 +98,7 @@ func _physics_process(_delta):
 	# Put the camera at the correct position.
 	$SquishyBodyCamera.position = centerPointPos
 	
-	if showPolygon:
+	if showPolygon and customTexture:
 		var outlineArray = getOutlineArray(false)
 		var uvArray:PackedVector2Array = getUVArray()
 		$Shape3D.polygon = outlineArray
@@ -161,12 +161,11 @@ func addPointExceptions():
 			
 			for layer2 in bodyPoints:
 				for point2 in layer2:
-					get_node(point).add_collision_exception_with(get_node(point2))
+					if typeof(point) != 1 and typeof(point2) != 1:
+						get_node(point).add_collision_exception_with(get_node(point2))
 
 func shouldBeCutOut(x, y):
 	var centerPos = Vector2((pointsHorz/2.0)-0.5, (pointsVert/2.0)-0.5)
-	
-	print(centerPos)
 	
 	var xDist = abs(x-centerPos.x)
 	var yDist = abs(y-centerPos.y)

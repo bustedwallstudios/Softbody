@@ -12,21 +12,21 @@ var PointB
 var speedScale
 
 # stiffness and dampingFactor are both set by the squishyBody itself.
-var stiffness:float
-var dampingFactor:float
+@export var stiffness:float
+@export var dampingFactor:float
 
 # The deformity of the springs. The higher this value is, the less the spring will spring back, and
 # the more it will permanently conform to the forces applied.
 # Set by the squishybody itself.
-var plasticity:float
+@export var plasticity:float
 
 # The higher this value is, the more quickly it will return to it's original shape
 # after being deformed by plasticity.
-var memory:float
+@export var memory:float
 
 # This is determined during the creation by the body, it's just how long the
 # spring would be if there were no external forces acting upon it
-var restLength:float
+@export  var restLength:float
 # This is set to the same thing as restLength in the softbody. It is used to figure out the memory
 # that should be applied, to stretch the springs back to the length they started at.
 var originalRestLength:float
@@ -38,7 +38,7 @@ var currentLength
 var hookesForceProduced:float
 
 # If this is true, we won't show the line
-var hideLine:bool
+@export var hideLine:bool = false
 
 # We'll set this to something later on to identify which spring it is
 var springName = "unknown" 
@@ -47,7 +47,6 @@ var springName = "unknown"
 # This is set to true in the SquishyBall code only, and will take the pressure
 # (calculated by the SquishyBall) and apply it to each point.
 var isBall = false
-var pressureFactor:float
 
 func _ready():
 	if hideLine:
@@ -55,7 +54,7 @@ func _ready():
 		$Line2D.hide()
 	
 	if not hasConvertedStupidNodePaths:
-			convertStupidNodePaths()
+		convertStupidNodePaths()
 
 func convertStupidNodePaths():
 	# Change the |path to the node| to the node itself
@@ -76,8 +75,8 @@ func _physics_process(delta):
 	# This is used in hookesLawToFindForce() and findPressureForce()
 	currentLength = (PointB.global_position - PointA.global_position).length()
 	
-	var springForce:float  = hookesLawToFindForce() * (delta*60) / speedScale
-	var dampingForce:float = findDampingForce()     * (delta*60) / speedScale
+	var springForce:float  = hookesLawToFindForce() * (delta*60)
+	var dampingForce:float = findDampingForce()     * (delta*60)
 	
 	var totalForce:float = springForce + dampingForce
 	
@@ -91,7 +90,7 @@ func _physics_process(delta):
 	# to figure out the pressure-based forces.
 	if isBall:
 		# The AMOUNT of pressure that we will apply to the points
-		var pressureForce:float = findPressureForce() * pressureFactor * (delta*60)
+		var pressureForce:float = (findPressureForce() * (delta*60)) * (restLength/100)
 		
 		# The direction we are to apply the force in is perpendicular to the spring,
 		# pointing outwards. This will push them both away from the center of the ball,
@@ -141,13 +140,13 @@ func aimForceToOtherPoint(force:float, thisPointPos:Vector2, otherPointPos:Vecto
 # Makes the vectors more normal, and rounds them to the nearest 1/1000th.
 # They would sometimes return strange values like -0, so this was made to fix that.
 func fixVector( vector: Vector2 ) -> Vector2:
-	var x = round( vector.x * 1000 ) / 1000
-	if x == -0: x = 0
-	
-	var y = round( vector.y * 1000 ) / 1000
-	if y == -0: y = 0
-	
-	return Vector2(x,y)
+#	var x = round( vector.x * 1000 ) / 1000
+#	if x == -0: x = 0
+#
+#	var y = round( vector.y * 1000 ) / 1000
+#	if y == -0: y = 0
+#
+	return vector #Vector2(x,y)
 
 # Find the force that the spring is applying, based on things like stiffness and position
 func hookesLawToFindForce() -> float:
@@ -219,7 +218,7 @@ func findPressureForce() -> float:
 	var vectorBetweenPoints:Vector2 = PointB.global_position - PointA.global_position
 	
 	# Force = P * L, where P is the pressure and L is the length of the spring.
-	var force:float = pressure * (vectorBetweenPoints.length())
+	var force:float = pressure
 	
 	return force
 
@@ -228,4 +227,3 @@ func updateLine():
 	$Line2D.clear_points()
 	$Line2D.add_point(PointA.position)
 	$Line2D.add_point(PointB.position)
-	

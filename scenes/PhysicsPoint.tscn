@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://bgtn2fou328kr"]
+
+[ext_resource type="Script" path="res://script/softbody/PhysicsPoint.gd" id="1_vhk2u"]
+
+[sub_resource type="PhysicsMaterial" id="2"]
+
+[sub_resource type="CircleShape2D" id="1"]
+radius = 10.0499
+
+[node name="PhysicsPoint" type="RigidBody2D"]
+input_pickable = true
+mass = 0.01
+physics_material_override = SubResource("2")
+gravity_scale = 0.0
+continuous_cd = 2
+max_contacts_reported = 1
+contact_monitor = true
+can_sleep = false
+lock_rotation = true
+script = ExtResource("1_vhk2u")
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+shape = SubResource("1")
+
+[node name="Marker" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-5.00068, 8.67582, -7.0778, 7.08483, -8.65774, 5.00771, -9.67421, 2.62122, -10, 0, -9.67421, -2.61579, -8.66879, -4.96913, -7.06675, -7.11254, -5.02277, -8.67039, -2.59209, -9.67581, 0, -10, 2.56757, -9.65371, 4.98721, -8.65934, 7.05328, -7.09045, 8.67742, -5.01332, 9.67179, -2.61579, 10, 0, 9.66074, 2.58807, 8.66637, 4.99666, 7.08643, 7.08483, 5.02035, 8.67582, 2.60072, 9.69229, 0, 10, -2.5921, 9.67019)
+
+[connection signal="input_event" from="." to="." method="inputEvent"]

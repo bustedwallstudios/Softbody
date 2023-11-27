@@ -16,6 +16,7 @@ The amount of points across the shape will be. When w*h gets to more than about 
 
 ### **Px Between Points**
 The amount of pixels in between the **center** of each point. This has no effect or relation to the point's radius, so if this value is exactly `2 * pointRadius`, there will be no gap between the points, and the "soft" body will be somewhat hard.
+* Note that in a recent update, I have changed it so that the points within a softbody do not collide with each other.
 
 ### **Point Radius**
 Exactly what it sounds like; the radius of the hitbox (and of course visual shape) of each physics point in the softbody.

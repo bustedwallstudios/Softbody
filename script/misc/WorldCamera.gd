@@ -7,7 +7,7 @@ var target_zoom: float = 1.0
 var lerpSpeed          = 20
 
 @export var initial_zoom: float = 0.25
-@export var zoom_speed: float = 0.25
+@export var zoom_per_scroll: float = 0.25
 @export var min_zoom: float = 0.1
 @export var max_zoom: float = 5.0
 
@@ -25,8 +25,8 @@ func _input(event):
 				is_panning = false
 		
 		# Depending on the direction of scroll, zoom in or out.
-		if event.button_index   == MOUSE_BUTTON_WHEEL_UP:   target_zoom *= 1.0 + zoom_speed
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN: target_zoom /= 1.0 + zoom_speed
+		if event.button_index   == MOUSE_BUTTON_WHEEL_UP:   target_zoom *= 1.0 + zoom_per_scroll
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN: target_zoom /= 1.0 + zoom_per_scroll
 		
 		
 		target_zoom = clamp(target_zoom, min_zoom, max_zoom) # current_zoom - zoomDelta

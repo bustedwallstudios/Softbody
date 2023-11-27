@@ -1,7 +1,7 @@
 extends Polygon2D
 
 # The amount of substance
-@export (float) var amountOfSubstance_n = 1000
+@export var amountOfSubstance_n:float = 1000
 @export (float) var idealGasConstant_R  = 8.31446261815324; # 8.31446261815324 is the real life universal gas constant
 
 # This allows us to create the rigidbodies whenever we need to

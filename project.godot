@@ -11,9 +11,14 @@ config_version=5
 [application]
 
 config/name="SoftbodyTest"
-run/main_scene="res://2dWorld.tscn"
+run/main_scene="res://scenes/2dWorld.tscn"
 config/features=PackedStringArray("4.1")
+run/max_fps=60
 config/icon="res://icon.png"
+
+[autoload]
+
+Events="*res://script/events.gd"
 
 [debug]
 
@@ -66,7 +71,7 @@ bigBall={
 
 [physics]
 
-2d/physics_engine="GodotPhysics"
+2d/physics_engine="GodotPhysics2D"
 3d/default_linear_damp=0.0
 3d/default_angular_damp=0.0
 2d/default_linear_damp=0.0

@@ -1,4 +1,4 @@
-extends StaticBody2D
+extends Node2D
 
 @export var moveSpeed:float    = 5
 @export var moveDistance:float = 10
@@ -12,8 +12,8 @@ func _physics_process(delta):
 	t += delta*moveSpeed
 	
 	if sinCos:
-		self.position.y += sin(t) * moveDistance
+		$Body.position.y += sin(t) * (moveDistance*(moveSpeed/5))
 	
 	else:
-		self.position.y += cos(t) * moveDistance
+		$Body.position.y += cos(t) * (moveDistance*(moveSpeed/5))
 

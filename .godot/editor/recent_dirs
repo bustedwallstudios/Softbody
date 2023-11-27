@@ -1,2 +1,4 @@
-res://MiscScripts
-res://Objects
+res://script/misc
+res://script/softbody/pbd
+res://scenes
+res://script
