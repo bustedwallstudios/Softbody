@@ -1,17 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://dsbjltikqy2to"]
+[gd_scene load_steps=3 format=3 uid="uid://dsbjltikqy2to"]
 
 [ext_resource type="Script" path="res://script/softbody/pbd/pbdBody.gd" id="1_8525b"]
-[ext_resource type="PackedScene" uid="uid://bgtn2fou328kr" path="res://scenes/PhysicsPoint.tscn" id="2_7ib2i"]
-[ext_resource type="PackedScene" uid="uid://dxjb1px4w5sws" path="res://scenes/Spring.tscn" id="3_o1ckx"]
+[ext_resource type="PackedScene" uid="uid://plwbpq8vcswp" path="res://scenes/PBDPoint.tscn" id="2_x8yyx"]
 
 [node name="PBDBody" type="Polygon2D"]
 color = Color(1, 1, 1, 0.0666667)
-polygon = PackedVector2Array(-50, -50, 50, -50, 50, 50, -50, 50)
+polygon = PackedVector2Array(-100, -100, 100, -100, 100, 100, -100, 100)
 script = ExtResource("1_8525b")
-physicsPointScene = ExtResource("2_7ib2i")
-physicsSpringScene = ExtResource("3_o1ckx")
-metadata/_edit_horizontal_guides_ = [50.0, -50.0]
-metadata/_edit_vertical_guides_ = [50.0, -50.0]
+physicsPointScene = ExtResource("2_x8yyx")
+metadata/_edit_horizontal_guides_ = [100.0, -100.0]
+metadata/_edit_vertical_guides_ = [100.0, -100.0]
 
 [node name="BoundingBoxLine" type="Line2D" parent="."]
 points = PackedVector2Array(123, -82, 122, -113, 169, -116, 169, -83, 128, -83)

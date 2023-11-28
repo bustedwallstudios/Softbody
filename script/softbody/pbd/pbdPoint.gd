@@ -20,19 +20,23 @@ func _physics_process(_delta):
 	self.linear_velocity += finalForce
 	
 	if dragging:
-		var target_position = get_global_mouse_position() + offset
-		global_position = target_position
+		# Necessary so it doesn't instantly teleport back to where it started
+		# The PBD body will handle unfreezing it
+		self.freeze = true 
 		
+		var target_position = get_global_mouse_position() + offset
+		
+		self.global_transform = Transform2D(0, target_position)
 		self.linear_velocity = Vector2.ZERO
-	
+
 func inputEvent(viewport, event, shape_idx):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			
-			print("left mouse button registered!")
+			#print("left mouse button registered!")
 			
 			if event.is_pressed() and not dragging:
-				print("dragging begun!\n")
+				#print("dragging begun!\n")
 				dragging = true
 				
 				var mouse_pos = get_global_mouse_position()

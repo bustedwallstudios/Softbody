@@ -38,12 +38,12 @@ func _physics_process(_delta):
 	absoluteForce = 0.01
 	
 	if dragging:
-		self.freeze = true # Necessary so it doesn't instantly teleport back to
-		# where it started
+		# Necessary so it doesn't instantly teleport back to where it started
+		self.freeze = true 
+		
 		var target_position = get_global_mouse_position() + offset
 		
 		self.global_transform = Transform2D(0, target_position)
-		
 		self.linear_velocity = Vector2.ZERO
 	else:
 		self.freeze = false

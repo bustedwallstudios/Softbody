@@ -1,7 +1,8 @@
 res://default_env.tres
-res://scenes/2dWorld.tscn
+res://scenes/PBDPoint.tscn
 res://script/misc/picle.gdshader
-res://scenes/PBDBody.tscn
-res://scenes/Spring.tscn
-res://scenes/PhysicsPoint.tscn
+res://script/softbody/pbd/Constraint.gd
 res://script/softbody/pbd/pbdBody.gd
+res://scenes/2dWorld.tscn
+res://scenes/PBDBody.tscn
+res://script/softbody/pbd/pbdPoint.gd

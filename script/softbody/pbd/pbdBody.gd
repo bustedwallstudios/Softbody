@@ -1,13 +1,15 @@
+# Try, instead of using super triangle, use the polygon that i provide somehow,
+# at the beginning? since that IS the thing i want to subdivide?
+
 extends Polygon2D
 
 @export var physicsPointScene:PackedScene
-@export var physicsSpringScene:PackedScene
 
-@export_range(1, 10) var substeps:int = 5
+@export_range(1, 16) var substeps:int = 4
 
-@export_range(-100, 100) var gravity:float = 1
+@export var gravity:Vector2 = Vector2(0, 1)
 
-@export_range(0, 100) var stiffness:float = 10
+@export_range(0, 1) var compliance:float = 0.001
 
 # If plasticity is 1, it will competely deform to any squishing that happens.
 # The lower it is, the less it will conform, and the more it will bounce back.
@@ -19,25 +21,137 @@ extends Polygon2D
 
 @export_range(1, 1000) var pointRadius = 100
 
-# Show the lines representing the spring constraints
-@export var showLines = true
+# Show the lines/polygons representing the constraints
+@export var drawLines = true
+@export var drawPolys = true
 
 @export var drawBoundingShapes:bool = false
 
 var allParticles:Array = [] # The physicsbody particle nodes
 var allPoints:Array    = [] # The positions of those nodes
 
-var constraintsList:Array = []
+var allTriangles:Array = []
+var allEdges:Array     = []
+
+# Lists of all edge and triangle constraints, which will be iterated upon each
+# frame, and the constraints solved.
+var edgeConstraints:Array = []
+var areaConstraints:Array = []
 
 func _ready():
+	# Calculate the triangulation, and get the edges from the triangulation.
+	# These triangles and edges are used for the constraints that will give
+	# the softbody it's shape.
 	var triangulation = delaunayTriangulation(self.polygon)
 	var edges         = getAllEdgesFrom(triangulation)
 	var points        = self.polygon
 	
+	# Creates the physical nodes
+	createPointNodes(points)
+	
+	# Initialize the constraints between the points
+	areaConstraints = initializeAreaConstraints(triangulation)
+	edgeConstraints = initializeEdgeConstraints(edges)
+	
+#	print("# of area constraints = ", len(areaConstraints), ": ", areaConstraints)
+#	print("# of edge constraints = ", len(edgeConstraints), ": ", edgeConstraints)
+	
+	# After creating all the points, add their collision exceptions.
+	addPointExceptions()
+	
+	if not drawBoundingShapes:
+		$BoundingBoxLine.clear_points()
+		$BoundingBoxLine.hide()
+		
+		$SuperTriangleLine.clear_points()
+		$SuperTriangleLine.hide()
+
+func _physics_process(Δt:float):
+	
+	Δt *= substeps
+	
+	# Clear the lines and polygons from last frame
+	rmLines()
+	rmPolys()
+	
+	# Display the bounding box and triangle
+	if drawBoundingShapes:
+		allPoints = []
+		for i in allParticles:
+			allPoints.append(i.position)
+		var box = getBoundingBox(allPoints)
+		var tri = getSuperTriangle(box)
+	
+	var Δts = Δt#/(substeps + 0.0)
+	
+	# Draw the lines and polygons if the user wants that
+	if drawLines:
+		for ec in edgeConstraints:
+			drawEdge([ec.vertices[0].position, ec.vertices[1].position])
+	if drawPolys:
+		for ac in areaConstraints:
+			drawTriangle([ac.vertices[0].position, ac.vertices[1].position, ac.vertices[2].position])
+	
+	# Calculate for each substep
+	for n in range(0, substeps):
+		
+		for particle in allParticles:
+			particle.linear_velocity += gravity * Δts * 98
+			particle.prevPos          = particle.position
+			particle.position        += particle.linear_velocity * Δts # Godot does this (hopefully)
+		
+		for ec in edgeConstraints:
+			ec.solve(Δts)
+		
+		for ac in areaConstraints:
+			var vecs = ac.solve(Δts)
+		
+		for particle in allParticles:
+			particle.linear_velocity = (particle.position - particle.prevPos) / Δts
+
+func initializeAreaConstraints(triangulation:Array):
+	var allAreaConstraints:Array = initConstraints(triangulation, Constraint.C_Type.FACE)
+	
+	return allAreaConstraints
+
+func initializeEdgeConstraints(allEdges:Array):
+	var allEdgeConstraints:Array = initConstraints(allEdges, Constraint.C_Type.EDGE)
+	
+	return allEdgeConstraints
+
+func initConstraints(components:Array, type:Constraint.C_Type) -> Array:
+	# Stores all the constraints, which store all their relevant nodes.
+	var allConstraints:Array = []
+	
+	# For every vertex in every triangle, attach one of the physical points to
+	# that vertex. Then add that triangle to the list of all triangle constraints.
+	for constraint in components:
+		
+		# Will store the vertex NODES that are a part of this constraint
+		var thisConstraintPoints = []
+		for vertex in constraint:
+			var node = getParticleNodeAt(vertex)
+			thisConstraintPoints.append(node)
+		
+		# The length/area of this constraint
+		var thisConstraintSize:float
+		match type: 
+			Constraint.C_Type.EDGE: thisConstraintSize = calculateEdgeLength(thisConstraintPoints[0].position, thisConstraintPoints[1].position)
+			Constraint.C_Type.FACE: thisConstraintSize = calculateTriangleArea(thisConstraintPoints[0].position, thisConstraintPoints[1].position, thisConstraintPoints[2].position)
+			_: print("ERROR! Type of edge is not correctly specified.")
+		
+		# My class
+		var newConstraint = Constraint.new()
+		newConstraint._construct(thisConstraintPoints, thisConstraintSize, compliance, type)
+		#print("new constraint with values: ", newConstraint.vertices, " ", newConstraint.restValue, " ", newConstraint.constraintType)
+		
+		allConstraints.append(newConstraint)
+	
+	return allConstraints
+
+func createPointNodes(points:Array):
 	for pos in points:
 		var physicsPoint = physicsPointScene.instantiate()
-		
-		physicsPoint.gravity_scale = gravity
 		
 		# Scale the point size and marker size appropriately
 		physicsPoint.get_node("Hitbox").shape.radius = pointRadius
@@ -47,42 +161,6 @@ func _ready():
 		
 		allParticles.append(physicsPoint)
 		self.add_child(physicsPoint)
-	
-	# After creating all the points, add their collision exceptions.
-	addPointExceptions()
-	
-	for edge in edges:
-		var p1 = getParticleNodeAt(edge[0])
-		var p2 = getParticleNodeAt(edge[1])
-		createSpring(p1, p2)
-	
-	if not drawBoundingShapes:
-		$BoundingBoxLine.clear_points()
-		$BoundingBoxLine.hide()
-		
-		$SuperTriangleLine.clear_points()
-		$SuperTriangleLine.hide()
-
-func _physics_process(Δt):
-	# Display the bounding box and triangle
-	if drawBoundingShapes:
-		allPoints = []
-		for i in allParticles:
-			allPoints.append(i.position)
-		var box = getBoundingBox(allPoints)
-		var tri = getSuperTriangle(box)
-
-#	var Δts = Δt/substeps
-#
-#	# Calculate for each substep
-#	for n in range(0, substeps):
-#
-#		for particle in allParticles:
-#			particle.linear_velocity.y += Δts * gravity
-#			particle.prevPos     = particle.position
-#			particle.position   += Δts * particle.linear_velocity
-#
-#		for 
 
 func addPointExceptions():
 	for point in allParticles:
@@ -96,30 +174,6 @@ func getParticleNodeAt(pos:Vector2):
 	
 	print("ERROR: Could not find point node at position ", pos)
 	return null
-
-func createSpring(pA, pB):
-	
-	# Create a new spring and add it as a child
-	var spring = physicsSpringScene.instantiate()
-	
-	# Connect the spring to this node and the target node, so that it keeps them apart.
-	spring.PointA = pA.get_path()
-	spring.PointB = pB.get_path()
-	
-	var thisSpringLength = (pA.position - pB.position).length()
-	
-	# Set the physical properties of the spring
-	spring.restLength         = thisSpringLength
-	spring.originalRestLength = thisSpringLength
-	spring.stiffness          = stiffness
-	spring.dampingFactor      = stiffness
-	spring.plasticity         = plasticity
-	spring.memory             = memory
-	
-	# This will not display the lines connecting the points where the springs are.
-	spring.hideLine = !showLines
-	
-	add_child(spring)
 
 func delaunayTriangulation(points:PackedVector2Array) -> Array:
 	# The list of current triangles that are inside the polygon. Starts at zero,
@@ -167,7 +221,7 @@ func delaunayTriangulation(points:PackedVector2Array) -> Array:
 			
 			#print("Bad triangle with vertices ", badTriangle, " ERASED")
 			
-			removeArrayFromAnotherArray(badTriangle, triangles)
+			removeComponentFromArray(badTriangle, triangles)
 		
 		# Add all non-duplicate edges to the polygonEdges array.
 		
@@ -204,8 +258,8 @@ func delaunayTriangulation(points:PackedVector2Array) -> Array:
 
 # This function checks whether an array is present within another array,
 # REGARDLESS OF ARRAY ORDER.‎
-func arrayIsInAnotherArray(insideArray:Array, outsideArray:Array) -> bool:
-	var requiredMatches = len(insideArray)
+func componentInArray(componentArray:Array, outsideArray:Array) -> bool:
+	var requiredMatches = len(componentArray)
 	var matchesSeen = 0
 	
 	# Loop over all the triangles in the outside array
@@ -215,7 +269,7 @@ func arrayIsInAnotherArray(insideArray:Array, outsideArray:Array) -> bool:
 		# For each vector2 in the triangle, 
 		for ov in subArray:
 			# go over each vector2 in the OTHER triangle,
-			for iv in insideArray:
+			for iv in componentArray:
 				# and check if they're equal.
 				if ov == iv:
 					# If they are equal, then that's one match closer to being
@@ -230,8 +284,9 @@ func arrayIsInAnotherArray(insideArray:Array, outsideArray:Array) -> bool:
 	
 	return false
 
-func removeArrayFromAnotherArray(insideArray:Array, outsideArray:Array):
-	var requiredMatches = len(insideArray)
+# Returns whether or not it found (and subsequently removed) the component
+func removeComponentFromArray(componentArray:Array, outsideArray:Array) -> bool:
+	var requiredMatches = len(componentArray)
 	var matchesSeen = 0
 	
 	# Loop over all the triangles in the outside array
@@ -241,7 +296,7 @@ func removeArrayFromAnotherArray(insideArray:Array, outsideArray:Array):
 		# For each vector2 in the triangle, 
 		for ov in subArray:
 			# go over each vector2 in the OTHER triangle,
-			for iv in insideArray:
+			for iv in componentArray:
 				# and check if they're equal.
 				if ov == iv:
 					# If they are equal, then that's one match closer to being
@@ -253,7 +308,12 @@ func removeArrayFromAnotherArray(insideArray:Array, outsideArray:Array):
 		# matches, they were the same!
 		if matchesSeen == requiredMatches:
 			outsideArray.erase(subArray)
-			return
+			
+			# Component was in the array
+			return true
+	
+	# Component was not in the array
+	return false
 
 # Gets just the edges from a given list of triangles - this is used to create
 # the spring constraints.
@@ -268,7 +328,8 @@ func getAllEdgesFrom(triangulation:Array) -> Array:
 				edge.append(triangle[(edgeIdx+1)%3]) # For the last edge, use vertex 0 again.
 				
 				# Only add the edge to the list of edges if it has not been counted yet
-				if not edge in allEdges:
+				# and also make sure that the flipped version has not been added yet.
+				if not componentInArray(edge, allEdges):
 					allEdges.append(edge)
 	
 	return allEdges
@@ -402,10 +463,14 @@ func getSuperTriangle(box:Rect2):
 	return superTriangle
 
 # Written by ChatGPT 4
+# Always returns a positive value
 func calculateTriangleArea(point1:Vector2, point2:Vector2, point3:Vector2) -> float:
 	var area = 0.5 * abs((point1.x * point2.y + point2.x * point3.y + point3.x * point1.y) -
 						 (point1.y * point2.x + point2.y * point3.x + point3.y * point1.x))
 	return area
+
+func calculateEdgeLength(point1:Vector2, point2:Vector2) -> float:
+	return point1.distance_to(point2)
 
 # Returns true if a triangle's points are (correctly) arranged in
 # counterclockwise order.
@@ -451,20 +516,8 @@ func showCircumcircle(tri:Array):
 			
 			self.add_child(d)
 
-func drawTriangle(tri:Array):
-	var line = Line2D.new()
-	
-	line.default_color = Color(randf(), randf(), randf())
-	line.width = 2
-	
-	line.add_point(tri[0])
-	line.add_point(tri[1])
-	line.add_point(tri[2])
-	line.add_point(tri[0])
-	
-	self.add_child(line)
-
-func drawEdge(edge:Array, col=Color(randf(), randf(), randf())):
+# Draw an edge or a polygon, mostly for debugging
+func drawEdge(edge:Array, col:Color=Color(0, 1, 0, 0.3)):
 	var line = Line2D.new()
 	
 	line.default_color = col
@@ -473,15 +526,31 @@ func drawEdge(edge:Array, col=Color(randf(), randf(), randf())):
 	line.add_point(edge[0])
 	line.add_point(edge[1])
 	
-	if col.r == 1:
-		line.z_index = 99
-	
 	self.add_child(line)
+func drawTriangle(tri:Array):
+	var poly = Polygon2D.new()
+	
+	poly.color = Color(0.6, 0.1, 0.8, 0.1)
+	
+	var p = []
+	p.append(tri[0])
+	p.append(tri[1])
+	p.append(tri[2])
+	
+	poly.polygon = PackedVector2Array(p)
+	
+	self.add_child(poly)
 
+# Remove all the lines and polygons that were drawn by the above 2 functions
 func rmLines():
 	for child in self.get_children():
 		if child.name != "BoundingBoxLine" and child.name != "SuperTriangleLine":
 			if child is Line2D:
+				child.queue_free()
+func rmPolys():
+	for child in self.get_children():
+		if child.name != "Polygon2D":
+			if child is Polygon2D:
 				child.queue_free()
 
 func _input(event):

@@ -28,11 +28,11 @@ metadata/_edit_horizontal_guides_ = [-775.0]
 
 [node name="PBDBody4" parent="." instance=ExtResource("7_jt80x")]
 position = Vector2(-319, -1448)
-polygon = PackedVector2Array(-100, -100, 100, -100, 317, -103, 555, -98, 809, -105, 845, 88, 595, 100, 338, 100, 100, 100, -100, 100)
-substeps = 8
-gravity = Vector2(0, 0)
+polygon = PackedVector2Array(-100, -100, 5, -203, 100, -100, 202, 2, 100, 100, 1, 203, -100, 100, -207, -5)
+substeps = 1
+compliance = 0.0
 pointRadius = 20
-drawBoundingShapes = true
+drawPolys = false
 
 [node name="WorldCamera" type="Camera2D" parent="."]
 position = Vector2(-273, -1345)

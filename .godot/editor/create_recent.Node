@@ -1,9 +1,9 @@
+CharacterBody2D
 DampedSpringJoint2D
 Timer
 Polygon2D
 Line2D
 StaticBody2D
-CharacterBody2D
 Node2D
 Node
 PinJoint2D
