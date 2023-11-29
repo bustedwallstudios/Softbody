@@ -1,3 +1,4 @@
+Line2D
 RigidBody2D
 Area2D
 Node
@@ -6,7 +7,6 @@ CharacterBody2D
 DampedSpringJoint2D
 Timer
 Polygon2D
-Line2D
 StaticBody2D
 Node2D
 PinJoint2D

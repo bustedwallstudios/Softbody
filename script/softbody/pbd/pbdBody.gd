@@ -24,7 +24,7 @@ extends Polygon2D
 # if it is decreased by the plasticity of the object (think memory foam pillow).
 @export_range(0, 1, 0.01) var memory: float
 
-@export_range(1, 1000) var pointRadius = 100
+@export_range(1, 1000) var pointRadius = 30
 
 # Show the lines/polygons representing the constraints
 @export var drawLines = true
@@ -56,8 +56,8 @@ func _ready():
 	createPointNodes(points)
 	
 	# Initialize the constraints between the points
-	areaConstraints = initializeAreaConstraints(triangulation)
-	edgeConstraints = initializeEdgeConstraints(edges)
+	areaConstraints = initAreaConstraints(triangulation)
+	edgeConstraints = initEdgeConstraints(edges)
 	
 #	print("# of area constraints = ", len(areaConstraints), ": ", areaConstraints)
 #	print("# of edge constraints = ", len(edgeConstraints), ": ", edgeConstraints)
@@ -84,7 +84,7 @@ func _physics_process(Δt:float):
 	if drawBoundingShapes:
 		allPoints = []
 		for i in allParticles:
-			allPoints.append(i.position)
+			allPoints.append(i.tPos)
 		var box = getBoundingBox(allPoints)
 		var _tri = getSuperTriangle(box)
 	
@@ -93,20 +93,21 @@ func _physics_process(Δt:float):
 	# Draw the lines and polygons if the user wants that
 	if drawLines:
 		for ec in edgeConstraints:
-			drawEdge([ec.vertices[0].position, ec.vertices[1].position])
+			drawEdge([ec.vertices[0].tPos, ec.vertices[1].tPos])
 	
 	if drawPolys:
 		for ac in areaConstraints:
-			drawTriangle([ac.vertices[0].position, ac.vertices[1].position, ac.vertices[2].position])
+			drawTriangle([ac.vertices[0].tPos, ac.vertices[1].tPos, ac.vertices[2].tPos])
 	
 	# Calculate for each substep
 	for n in range(0, substeps):
 		
 		# PRE-SOLVE CALCULATIONS
 		for particle in allParticles:
-			particle.velocity += gravity * Δts
-			particle.prevPos   = particle.position
-			particle.position += particle.velocity * Δts # Godot does this (hopefully)
+			#particle.velocity += gravity * Δts
+			particle.prevPos   = particle.tPos
+			particle.tPos      = particle.position
+			particle.tPos     += particle.linear_velocity * Δts # Godot does this (hopefully)
 		
 		# SOLVE EDGES
 		for ec in edgeConstraints:
@@ -115,7 +116,7 @@ func _physics_process(Δt:float):
 			if drawForceVectors and n==0: # Only draw the force vectors on the first substep
 				# For both of the points in this edge
 				for i in range(0, 2):
-					drawEdge([ec.vertices[i].position, ec.vertices[i].position + edgeForceVecs[i]*100], Color(0.8, 0, 1))
+					drawEdge([ec.vertices[i].tPos, ec.vertices[i].tPos + edgeForceVecs[i]*100], Color(0.8, 0, 1))
 		
 		# AND SOLVE AREAS
 		for ac in areaConstraints:
@@ -124,18 +125,18 @@ func _physics_process(Δt:float):
 			if drawForceVectors and n==0: # Only draw the force vectors on the first substep
 				# For both of the points in this edge
 				for i in range(0, 3):
-					drawEdge([ac.vertices[i].position, ac.vertices[i].position + triForceVecs[i]/10], Color(0.8, 1, 0))
+					drawEdge([ac.vertices[i].tPos, ac.vertices[i].tPos + triForceVecs[i]/10], Color(0.8, 1, 0))
 		
 		# POST-SOLVE CALCULATIONS
 		for particle in allParticles:
-			particle.velocity = (particle.position - particle.prevPos) / Δts
+			particle.linear_velocity = (particle.tPos - particle.prevPos) / Δts
 
-func initializeAreaConstraints(triangulation:Array):
+func initAreaConstraints(triangulation:Array):
 	var allAreaConstraints:Array = initConstraints(triangulation, Constraint.C_Type.FACE)
 	
 	return allAreaConstraints
 
-func initializeEdgeConstraints(edgeList:Array):
+func initEdgeConstraints(edgeList:Array):
 	var allEdgeConstraints:Array = initConstraints(edgeList, Constraint.C_Type.EDGE)
 	
 	return allEdgeConstraints
@@ -157,8 +158,8 @@ func initConstraints(components:Array, type:Constraint.C_Type) -> Array:
 		# The length/area of this constraint
 		var thisConstraintSize:float
 		match type: 
-			Constraint.C_Type.EDGE: thisConstraintSize = calculateEdgeLength(thisConstraintPoints[0].position, thisConstraintPoints[1].position)
-			Constraint.C_Type.FACE: thisConstraintSize = calculateTriangleArea(thisConstraintPoints[0].position, thisConstraintPoints[1].position, thisConstraintPoints[2].position)
+			Constraint.C_Type.EDGE: thisConstraintSize = calculateEdgeLength(thisConstraintPoints[0].tPos, thisConstraintPoints[1].tPos)
+			Constraint.C_Type.FACE: thisConstraintSize = calculateTriangleArea(thisConstraintPoints[0].tPos, thisConstraintPoints[1].tPos, thisConstraintPoints[2].tPos)
 			_: print("ERROR! Type of edge is not correctly specified.")
 		
 		# My class
@@ -176,9 +177,10 @@ func createPointNodes(points:Array):
 		
 		# Scale the point size and marker size appropriately
 		physicsPoint.get_node("Hitbox").shape.radius = pointRadius
-		physicsPoint.get_node("Marker").scale = Vector2(pointRadius/10, pointRadius/10) # /10 because it is already 10 pixels across
+		physicsPoint.get_node("Marker").scale = Vector2(pointRadius/10.0, pointRadius/10.0) # /10 because it is already 10 pixels across
 		
 		physicsPoint.position = pos
+		physicsPoint.tPos = pos # Also set the position that i'm going to modify
 		
 		# inverse mass
 		physicsPoint.mass += (massPerTriangle/3.0)
@@ -193,10 +195,10 @@ func addPointExceptions():
 
 func getParticleNodeAt(pos:Vector2):
 	for pointNode in allParticles:
-		if pointNode.position == pos:
+		if pointNode.tPos == pos:
 			return pointNode
 	
-	print("ERROR: Could not find point node at position ", pos)
+	print("ERROR: Could not find point node at tPos ", pos)
 	return null
 
 func delaunayTriangulation(points:PackedVector2Array) -> Array:
@@ -530,10 +532,10 @@ func showCircumcircle(tri:Array):
 	for i in range(0, 50):
 		for j in range(0, 50):
 			var d = $Polygon2D.duplicate()
-			d.position = Vector2(i*10-250, j*10-250)
+			d.tPos = Vector2(i*10-250, j*10-250)
 			
 			
-			if inCircumcircleOf(tri, d.position):
+			if inCircumcircleOf(tri, d.tPos):
 				d.color = Color(0, 1, 0, 0.1)
 			else:
 				d.color = Color(1, 0, 0, 0.1)

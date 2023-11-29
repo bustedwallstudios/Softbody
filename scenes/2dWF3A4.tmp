@@ -1,10 +1,11 @@
-[gd_scene load_steps=12 format=3 uid="uid://c4f4lwmde3tn8"]
+[gd_scene load_steps=13 format=3 uid="uid://c4f4lwmde3tn8"]
 
 [ext_resource type="Script" path="res://script/misc/Draggable2.gd" id="2"]
 [ext_resource type="Script" path="res://script/misc/Draggable.gd" id="3"]
 [ext_resource type="Script" path="res://script/misc/Rotate.gd" id="5_lu0kl"]
 [ext_resource type="Script" path="res://script/misc/WorldCamera.gd" id="6"]
 [ext_resource type="Script" path="res://script/misc/Move.gd" id="6_5emu8"]
+[ext_resource type="PackedScene" uid="uid://dkpycf1pnklng" path="res://scenes/SquishyBody.tscn" id="7_1mrqs"]
 [ext_resource type="PackedScene" uid="uid://dsbjltikqy2to" path="res://scenes/PBDBody.tscn" id="7_jt80x"]
 
 [sub_resource type="CircleShape2D" id="2"]
@@ -27,9 +28,9 @@ metadata/_edit_vertical_guides_ = [-598.0]
 metadata/_edit_horizontal_guides_ = [-775.0]
 
 [node name="PBDBody" parent="." instance=ExtResource("7_jt80x")]
-position = Vector2(-646.791, -1321)
-scale = Vector2(1.02791, 1)
-polygon = PackedVector2Array(-111.109, -97, 100, -100, 99.0272, 113, -115, 110)
+position = Vector2(-644, -1321)
+polygon = PackedVector2Array(-100, -100, 0, -276, 100, -100, 368, -12, 297, 114, 100, 100, 103, 262, -100, 100)
+pointRadius = 30
 drawBoundingShapes = true
 
 [node name="WorldCamera" type="Camera2D" parent="."]
@@ -317,3 +318,5 @@ shape = SubResource("RectangleShape2D_aoks5")
 
 [node name="Shape" type="Polygon2D" parent="Geometries/MovingPiece4/Body"]
 polygon = PackedVector2Array(-845, -27, 447, -27, 447, 29, -845, 29)
+
+[node name="SquishyBody" parent="." instance=ExtResource("7_1mrqs")]

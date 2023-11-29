@@ -59,7 +59,7 @@ func solve(Δt:float):
 		# that the points would have to move with magnitude C in order to 
 		# completely satisfy the constraint.
 		# The two point's gradients are just negative the other point's gradient
-		var gradient:Vector2 = getDirVec(p2.position, p1.position)
+		var gradient:Vector2 = getDirVec(p2.tPos, p1.tPos)
 		
 		var dir1:Vector2 = gradient # gradient (should be squared, but it's length 1, so don't waste clock cycles)
 		var dir2:Vector2 = -gradient
@@ -69,18 +69,17 @@ func solve(Δt:float):
 		# the inverse mass of both points combined, plus the compliance (higher compliance -> smaller λ)
 		# This IS:
 		# A value representing how much each point should move towards
-		# the desired (resting) position of the constraint.
+		# the desired (resting) tPos of the constraint.
 		# It is that because it's the amount fully towards the end, decreased
 		# inversely proportionally to how heavy all the points are, and
 		# proportionally to the compliance.
 		var λ:float = -C / (w + α/pow(Δt, 2))
 		
-		# The g at the end is just the direction
 		var correctionVec1:Vector2 = (λ * w1) * dir1
 		var correctionVec2:Vector2 = (λ * w2) * dir2
 		
-		self.vertices[0].position += correctionVec1
-		self.vertices[1].position += correctionVec2
+		self.vertices[0].tPos += correctionVec1
+		self.vertices[1].tPos += correctionVec2
 		
 		# Just to display the force vectors
 		return [correctionVec1, correctionVec2]
@@ -92,9 +91,9 @@ func solve(Δt:float):
 		var p3:RigidBody2D = vertices[2]
 		
 		# Just to save a couple characters down the line
-		var p1p:Vector2 = p1.position
-		var p2p:Vector2 = p2.position
-		var p3p:Vector2 = p3.position
+		var p1p:Vector2 = p1.tPos
+		var p2p:Vector2 = p2.tPos
+		var p3p:Vector2 = p3.tPos
 		
 		# Rest value of this triangle constraint
 		var area0 = self.restValue
@@ -143,9 +142,9 @@ func solve(Δt:float):
 #			print("cvec3: ", correctionVec3)
 #			print()
 		
-		self.vertices[0].position += correctionVec1*0.0001
-		self.vertices[1].position += correctionVec2*0.0001
-		self.vertices[2].position += correctionVec3*0.0001
+		self.vertices[0].tPos += correctionVec1*0.0001
+		self.vertices[1].tPos += correctionVec2*0.0001
+		self.vertices[2].tPos += correctionVec3*0.0001
 		
 		return [correctionVec1, correctionVec2, correctionVec3]
 
@@ -170,7 +169,7 @@ func getCurrentValue():
 			print("ERROR! Constraint has no C_Type associated with it!")
 
 func currentLength():
-	return vertices[0].position.distance_to(vertices[1].position)
+	return vertices[0].tPos.distance_to(vertices[1].tPos)
 
 # Written by ChatGPT 4
 func currentArea() -> float:
@@ -178,8 +177,8 @@ func currentArea() -> float:
 	var point2 = vertices[1]
 	var point3 = vertices[2]
 	
-	var area = 0.5 * ((point1.position.x * point2.position.y + point2.position.x * point3.position.y + point3.position.x * point1.position.y) -
-					  (point1.position.y * point2.position.x + point2.position.y * point3.position.x + point3.position.y * point1.position.x))
+	var area = 0.5 * ((point1.tPos.x * point2.tPos.y + point2.tPos.x * point3.tPos.y + point3.tPos.x * point1.tPos.y) -
+					  (point1.tPos.y * point2.tPos.x + point2.tPos.y * point3.tPos.x + point3.tPos.y * point1.tPos.x))
 	
 	# Return the area - takes into account winding direction, and therefore
 	# will return negative values for inverted triangles.
