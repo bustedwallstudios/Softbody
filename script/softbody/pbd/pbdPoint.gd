@@ -1,6 +1,6 @@
-extends Area2D
+extends RigidBody2D
 
-var mass:float = 0
+#var mass:float = 0
 var wass:float = 0
 
 var velocity:Vector2
@@ -13,6 +13,7 @@ var offset = Vector2()
 
 # EVERYTHING BELOW THIS IS FOR DRAGGING ////////////////////////////////////////////////////////////
 func _physics_process(delta):
+	self.freeze = true
 	if dragging:
 		# Necessary so it doesn't instantly teleport back to where it started
 		# The PBD body will handle unfreezing it

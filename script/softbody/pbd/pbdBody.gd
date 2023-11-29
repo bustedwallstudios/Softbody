@@ -1,6 +1,9 @@
 # Try, instead of using super triangle, use the polygon that i provide somehow,
 # at the beginning? since that IS the thing i want to subdivide?
 
+#	physics_collision.disabled = true
+#	physics_collision.disabled = false
+
 extends Polygon2D
 
 @export var physicsPointScene:PackedScene
@@ -184,7 +187,6 @@ func createPointNodes(points:Array):
 		self.add_child(physicsPoint)
 
 func addPointExceptions():
-	return
 	for point in allParticles:
 		for point2 in allParticles:
 			point.add_collision_exception_with(point2)

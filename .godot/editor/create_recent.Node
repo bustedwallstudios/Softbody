@@ -1,3 +1,4 @@
+RigidBody2D
 Area2D
 Node
 CollisionShape2D
@@ -9,5 +10,4 @@ Line2D
 StaticBody2D
 Node2D
 PinJoint2D
-RigidBody2D
 CollisionPolygon2D
