@@ -11,6 +11,8 @@ extends Polygon2D
 
 @export_range(0, 1) var compliance:float = 0.001
 
+@export_range(0.001, 100) var massPerTriangle:float = 1
+
 # If plasticity is 1, it will competely deform to any squishing that happens.
 # The lower it is, the less it will conform, and the more it will bounce back.
 @export_range(0, 0.2) var plasticity:float = 0
@@ -24,6 +26,7 @@ extends Polygon2D
 # Show the lines/polygons representing the constraints
 @export var drawLines = true
 @export var drawPolys = true
+@export var drawForceVectors = true # The force vectors that all constraints apply to each 
 
 @export var drawBoundingShapes:bool = false
 
@@ -80,7 +83,7 @@ func _physics_process(Δt:float):
 		for i in allParticles:
 			allPoints.append(i.position)
 		var box = getBoundingBox(allPoints)
-		var tri = getSuperTriangle(box)
+		var _tri = getSuperTriangle(box)
 	
 	var Δts = Δt#/(substeps + 0.0)
 	
@@ -88,6 +91,7 @@ func _physics_process(Δt:float):
 	if drawLines:
 		for ec in edgeConstraints:
 			drawEdge([ec.vertices[0].position, ec.vertices[1].position])
+	
 	if drawPolys:
 		for ac in areaConstraints:
 			drawTriangle([ac.vertices[0].position, ac.vertices[1].position, ac.vertices[2].position])
@@ -95,27 +99,41 @@ func _physics_process(Δt:float):
 	# Calculate for each substep
 	for n in range(0, substeps):
 		
+		# PRE-SOLVE CALCULATIONS
 		for particle in allParticles:
-			particle.linear_velocity += gravity * Δts * 98
-			particle.prevPos          = particle.position
-			particle.position        += particle.linear_velocity * Δts # Godot does this (hopefully)
+			particle.velocity += gravity * Δts
+			particle.prevPos   = particle.position
+			particle.position += particle.velocity * Δts # Godot does this (hopefully)
 		
+		# SOLVE EDGES
 		for ec in edgeConstraints:
-			ec.solve(Δts)
+			var edgeForceVecs = ec.solve(Δts)
+			
+			if drawForceVectors and n==0: # Only draw the force vectors on the first substep
+				# For both of the points in this edge
+				for i in range(0, 2):
+					drawEdge([ec.vertices[i].position, ec.vertices[i].position + edgeForceVecs[i]*100], Color(0.8, 0, 1))
 		
+		# AND SOLVE AREAS
 		for ac in areaConstraints:
-			var vecs = ac.solve(Δts)
+			var triForceVecs = ac.solve(Δts)
+			
+			if drawForceVectors and n==0: # Only draw the force vectors on the first substep
+				# For both of the points in this edge
+				for i in range(0, 3):
+					drawEdge([ac.vertices[i].position, ac.vertices[i].position + triForceVecs[i]/10], Color(0.8, 1, 0))
 		
+		# POST-SOLVE CALCULATIONS
 		for particle in allParticles:
-			particle.linear_velocity = (particle.position - particle.prevPos) / Δts
+			particle.velocity = (particle.position - particle.prevPos) / Δts
 
 func initializeAreaConstraints(triangulation:Array):
 	var allAreaConstraints:Array = initConstraints(triangulation, Constraint.C_Type.FACE)
 	
 	return allAreaConstraints
 
-func initializeEdgeConstraints(allEdges:Array):
-	var allEdgeConstraints:Array = initConstraints(allEdges, Constraint.C_Type.EDGE)
+func initializeEdgeConstraints(edgeList:Array):
+	var allEdgeConstraints:Array = initConstraints(edgeList, Constraint.C_Type.EDGE)
 	
 	return allEdgeConstraints
 
@@ -159,10 +177,14 @@ func createPointNodes(points:Array):
 		
 		physicsPoint.position = pos
 		
+		# inverse mass
+		physicsPoint.mass += (massPerTriangle/3.0)
+		
 		allParticles.append(physicsPoint)
 		self.add_child(physicsPoint)
 
 func addPointExceptions():
+	return
 	for point in allParticles:
 		for point2 in allParticles:
 			point.add_collision_exception_with(point2)
@@ -205,7 +227,7 @@ func delaunayTriangulation(points:PackedVector2Array) -> Array:
 		var polygonEdges:Array = []
 		
 		# All of the edges in the bad triangles
-		var allEdges:Array
+		var badEdges:Array = []
 		
 		# Loop over all the bad triangles, and add each of their edges to the list.
 		# This will contain all edges, and whichever ones are NOT duplicates 
@@ -217,7 +239,7 @@ func delaunayTriangulation(points:PackedVector2Array) -> Array:
 				edge.append(badTriangle[edgeIdx])
 				edge.append(badTriangle[(edgeIdx+1)%3]) # For the last edge, use vertex 0 again.
 				
-				allEdges.append(edge)
+				badEdges.append(edge)
 			
 			#print("Bad triangle with vertices ", badTriangle, " ERASED")
 			
@@ -225,11 +247,11 @@ func delaunayTriangulation(points:PackedVector2Array) -> Array:
 		
 		# Add all non-duplicate edges to the polygonEdges array.
 		
-		for wrongEdge in allEdges:
+		for wrongEdge in badEdges:
 			# Count the number of time this edge shows up in the list. 
 			var totalCount = 0
-			totalCount += allEdges.count(wrongEdge)
-			totalCount += allEdges.count([wrongEdge[1], wrongEdge[0]]) # VERY IMPORTANT! ALSO COUNT THE CASES WHERE THE EDGE IS "BACKWARDS" - THE ORDER MAY BE FLIPPED, BUT THE EDGE IS THE SAME!
+			totalCount += badEdges.count(wrongEdge)
+			totalCount += badEdges.count([wrongEdge[1], wrongEdge[0]]) # VERY IMPORTANT! ALSO COUNT THE CASES WHERE THE EDGE IS "BACKWARDS" - THE ORDER MAY BE FLIPPED, BUT THE EDGE IS THE SAME!
 			
 			if totalCount == 1:
 				polygonEdges.append(wrongEdge)
@@ -318,7 +340,7 @@ func removeComponentFromArray(componentArray:Array, outsideArray:Array) -> bool:
 # Gets just the edges from a given list of triangles - this is used to create
 # the spring constraints.
 func getAllEdgesFrom(triangulation:Array) -> Array:
-	var allEdges = []
+	var edgesInTriangulation = []
 	
 	for triangle in triangulation:
 		for edgeIdx in range(0, 3):
@@ -329,10 +351,10 @@ func getAllEdgesFrom(triangulation:Array) -> Array:
 				
 				# Only add the edge to the list of edges if it has not been counted yet
 				# and also make sure that the flipped version has not been added yet.
-				if not componentInArray(edge, allEdges):
-					allEdges.append(edge)
+				if not componentInArray(edge, edgesInTriangulation):
+					edgesInTriangulation.append(edge)
 	
-	return allEdges
+	return edgesInTriangulation
 
 # Written by ChatGPT4
 func inCircumcircleOf(triangle:Array, P:Vector2):

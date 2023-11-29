@@ -18,7 +18,7 @@ var doTint:bool
 # length of all spring forces acting on this point.
 var absoluteForce:float = 0.01
 
-func _physics_process(_delta):
+func _physics_process(delta):
 	# The force we will apply to the point. The springs should not have as much of an effect on 
 	# the points if there is a high mass (F = ma -> a = F/m). The gravity is unaffected by the
 	# mass, and so is added on outside of the division.

@@ -1,21 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://plwbpq8vcswp"]
+[gd_scene load_steps=3 format=3 uid="uid://plwbpq8vcswp"]
 
 [ext_resource type="Script" path="res://script/softbody/pbd/pbdPoint.gd" id="1_457y5"]
-
-[sub_resource type="PhysicsMaterial" id="2"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 10.0499
 
-[node name="PhysicsPoint" type="RigidBody2D"]
-input_pickable = true
-physics_material_override = SubResource("2")
-gravity_scale = 0.0
-continuous_cd = 2
-max_contacts_reported = 1
-contact_monitor = true
-can_sleep = false
-lock_rotation = true
+[node name="PhysicsPoint" type="Area2D"]
 script = ExtResource("1_457y5")
 
 [node name="Hitbox" type="CollisionShape2D" parent="."]

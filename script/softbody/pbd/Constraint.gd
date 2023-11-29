@@ -4,21 +4,6 @@ class_name Constraint extends Node
 
 """
 Mostly created with help from Ten Minute Physics: https://www.youtube.com/watch?v=uCaHXkS2cUg
-
-And from ChatGPT 3:
-
-λ represents a scaling factor or coefficient associated with the constraints in the optimization problem.
-When solving an optimization problem with constraints using the Lagrange multiplier method, λ acts as
-a factor that adjusts the impact of the constraints on the objective function.
-
-The value of λ is determined through the process of solving the system of equations involving the partial
-derivatives of the Lagrangian (a modified function involving both the objective function and the constraints)
-with respect to the variables of interest (e.g., x, y) and λ itself.
-
-The interpretation of λ depends on the problem in which it is involved:
-	If λ > 0: It implies that the constraint is active, meaning it influences the optimization problem.
-	If λ = 0: It suggests that the constraint is inactive or not affecting the optimization problem at the solution point.
-	The magnitude of λ reflects the sensitivity of the objective function to changes in the constraint.
 """
 
 # Compliance
@@ -51,8 +36,8 @@ func solve(Δt:float):
 	if self.constraintType == C_Type.EDGE:
 		α = 1 # The edges have wayyy more compliance than the area
 		
-		var p1:RigidBody2D = vertices[0]
-		var p2:RigidBody2D = vertices[1]
+		var p1:Area2D = vertices[0]
+		var p2:Area2D = vertices[1]
 		
 		# The length and rest length of this edge constraint
 		var l  = self.currentValue
@@ -96,12 +81,15 @@ func solve(Δt:float):
 		
 		self.vertices[0].position += correctionVec1
 		self.vertices[1].position += correctionVec2
+		
+		# Just to display the force vectors
+		return [correctionVec1, correctionVec2]
 	
 	# Triangle constraint
 	else:
-		var p1:RigidBody2D = vertices[0]
-		var p2:RigidBody2D = vertices[1]
-		var p3:RigidBody2D = vertices[2]
+		var p1:Area2D = vertices[0]
+		var p2:Area2D = vertices[1]
+		var p3:Area2D = vertices[2]
 		
 		# Just to save a couple characters down the line
 		var p1p:Vector2 = p1.position
@@ -123,11 +111,16 @@ func solve(Δt:float):
 		
 		# The constraint function is the deviation from the rest area.
 		# Includes negative areas.
-		var C:float = area - area0
+		var m:float = 1
+		var C:float = m * (area - area0)
 		
 		# Calculate λ (Lagrange multiplier)
 		var denom = (w + α / pow(Δt, 2))
-		var λ: float = -C / denom
+		var λ: float = (-C) / denom
+		
+#		if not is_nan(λ):
+#			print("-C:    ", -C)
+#			print("denom: ", denom)
 		
 		# Calculate individual gradient vectors for each particle.
 		# A vector purpendicular to the opposide side from this point.
@@ -139,15 +132,22 @@ func solve(Δt:float):
 		var correctionVec1:Vector2 = (λ * w1) * dir1
 		var correctionVec2:Vector2 = (λ * w2) * dir2
 		var correctionVec3:Vector2 = (λ * w3) * dir3
-#
-#		print(α)
-#		print(w)
-#		print(λ)
-#		print()
-#
+		
+		# Debugging
+#		if not is_nan(λ):
+#			print("λ:    ", λ)
+#			print("w1:   ", w1)
+#			print("dir1: ", dir1)
+#			print("cvec1: ", correctionVec1)
+#			print("cvec2: ", correctionVec2)
+#			print("cvec3: ", correctionVec3)
+#			print()
+		
 		self.vertices[0].position += correctionVec1*0.0001
 		self.vertices[1].position += correctionVec2*0.0001
 		self.vertices[2].position += correctionVec3*0.0001
+		
+		return [correctionVec1, correctionVec2, correctionVec3]
 
 # The normalized direction vector (the gradient of a distance constraint) between two points
 func getDirVec(p1:Vector2, p2:Vector2):

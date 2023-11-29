@@ -91,12 +91,9 @@ func _ready():
 	addPointExceptions()
 	initiateSprings()
 
-# warning-ignore:unused_argument
-func _physics_process(_delta):
+func _physics_process(delta):
 	# The position of the point closest to the center of the squishyBody.
 	centerPointPos = get_node(bodyPoints[pointsVert/2][pointsHorz/2]).position
-	# Put the camera at the correct position.
-	$SquishyBodyCamera.position = centerPointPos
 	
 	if showPolygon and customTexture:
 		var outlineArray = getOutlineArray(false)

@@ -4,7 +4,6 @@ extends RigidBody2D
 
 var t = 0
 
-# warning-ignore:unused_argument
 func _physics_process(delta):
 	t += delta*5
 	self.angular_velocity = sin(t) * 2

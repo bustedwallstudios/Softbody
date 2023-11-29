@@ -22,6 +22,8 @@ Events="*res://script/Events.gd"
 
 [debug]
 
+gdscript/warnings/unused_parameter=0
+gdscript/warnings/confusable_identifier=0
 settings/fps/force_fps=60
 
 [input]

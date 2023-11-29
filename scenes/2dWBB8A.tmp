@@ -1,10 +1,11 @@
-[gd_scene load_steps=12 format=3 uid="uid://c4f4lwmde3tn8"]
+[gd_scene load_steps=13 format=3 uid="uid://c4f4lwmde3tn8"]
 
 [ext_resource type="Script" path="res://script/misc/Draggable2.gd" id="2"]
 [ext_resource type="Script" path="res://script/misc/Draggable.gd" id="3"]
 [ext_resource type="Script" path="res://script/misc/Rotate.gd" id="5_lu0kl"]
 [ext_resource type="Script" path="res://script/misc/WorldCamera.gd" id="6"]
 [ext_resource type="Script" path="res://script/misc/Move.gd" id="6_5emu8"]
+[ext_resource type="PackedScene" uid="uid://plwbpq8vcswp" path="res://scenes/PBDPoint.tscn" id="7_3ih5a"]
 [ext_resource type="PackedScene" uid="uid://dsbjltikqy2to" path="res://scenes/PBDBody.tscn" id="7_jt80x"]
 
 [sub_resource type="CircleShape2D" id="2"]
@@ -26,10 +27,13 @@ size = Vector2(1292, 56)
 metadata/_edit_vertical_guides_ = [-598.0]
 metadata/_edit_horizontal_guides_ = [-775.0]
 
-[node name="PBDBody" parent="." instance=ExtResource("7_jt80x")]
-position = Vector2(-644, -1321)
-polygon = PackedVector2Array(-100, -100, 0, -276, 100, -100, 368, -12, 297, 114, 100, 100, 103, 262, -100, 100)
-pointRadius = 30
+[node name="PBDBody4" parent="." instance=ExtResource("7_jt80x")]
+position = Vector2(-319, -1448)
+polygon = PackedVector2Array(100, -100, 100, 100, -100, 100)
+substeps = 8
+gravity = Vector2(0, 0)
+compliance = 0.0
+pointRadius = 20
 drawBoundingShapes = true
 
 [node name="WorldCamera" type="Camera2D" parent="."]
@@ -37,7 +41,6 @@ position = Vector2(-273, -1345)
 zoom = Vector2(0.5, 0.5)
 script = ExtResource("6")
 initial_zoom = 0.5
-min_zoom = 0.001
 
 [node name="Geometries" type="Node2D" parent="."]
 
@@ -317,3 +320,6 @@ shape = SubResource("RectangleShape2D_aoks5")
 
 [node name="Shape" type="Polygon2D" parent="Geometries/MovingPiece4/Body"]
 polygon = PackedVector2Array(-845, -27, 447, -27, 447, 29, -845, 29)
+
+[node name="PhysicsPoint" parent="." instance=ExtResource("7_3ih5a")]
+position = Vector2(-2181, -1422)

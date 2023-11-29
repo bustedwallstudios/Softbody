@@ -1,3 +1,6 @@
+Area2D
+Node
+CollisionShape2D
 CharacterBody2D
 DampedSpringJoint2D
 Timer
@@ -5,8 +8,6 @@ Polygon2D
 Line2D
 StaticBody2D
 Node2D
-Node
 PinJoint2D
 RigidBody2D
-CollisionShape2D
 CollisionPolygon2D
