@@ -27,9 +27,9 @@ metadata/_edit_vertical_guides_ = [-598.0]
 metadata/_edit_horizontal_guides_ = [-775.0]
 
 [node name="PBDBody" parent="." instance=ExtResource("7_jt80x")]
-position = Vector2(-646.791, -1321)
-scale = Vector2(1.02791, 1)
-polygon = PackedVector2Array(-111.109, -97, 100, -100, 99.0272, 113, -115, 110)
+position = Vector2(-644, -1321)
+polygon = PackedVector2Array(-100, -100, 0, -276, 100, -100, 368, -12, 297, 114, 100, 100, 103, 262, -100, 100)
+pointRadius = 30
 drawBoundingShapes = true
 
 [node name="WorldCamera" type="Camera2D" parent="."]
