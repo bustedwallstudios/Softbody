@@ -8,9 +8,6 @@ color = Color(1, 1, 1, 0.0666667)
 polygon = PackedVector2Array(-100, -100, 100, -100, 100, 100, -100, 100)
 script = ExtResource("1_8525b")
 physicsPointScene = ExtResource("2_x8yyx")
-substeps = 1
-compliance = 0.133
-drawBoundingShapes = true
 metadata/_edit_horizontal_guides_ = [100.0, -100.0]
 metadata/_edit_vertical_guides_ = [100.0, -100.0]
 

@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://bgtn2fou328kr"]
+[gd_scene load_steps=4 format=3 uid="uid://bgtn2fou328kr"]
 
 [ext_resource type="PhysicsMaterial" uid="uid://dwsymsdc6iunu" path="res://resources/PhysicsPointPhysicsMaterial.tres" id="1_rjhqk"]
+[ext_resource type="Script" path="res://script/softbody/PhysicsPoint.gd" id="1_vhk2u"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 10.0499
@@ -10,11 +11,12 @@ input_pickable = true
 mass = 0.01
 physics_material_override = ExtResource("1_rjhqk")
 gravity_scale = 0.0
-can_sleep = false
-lock_rotation = true
 continuous_cd = 2
 max_contacts_reported = 1
 contact_monitor = true
+can_sleep = false
+lock_rotation = true
+script = ExtResource("1_vhk2u")
 
 [node name="Hitbox" type="CollisionShape2D" parent="."]
 shape = SubResource("1")

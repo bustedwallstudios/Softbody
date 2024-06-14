@@ -1,10 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://dkpycf1pnklng"]
+[gd_scene load_steps=5 format=3 uid="uid://dkpycf1pnklng"]
 
-[ext_resource type="Script" path="res://script/softbody/pbd/pbdBody.gd" id="3"]
+[ext_resource type="PackedScene" uid="uid://bgtn2fou328kr" path="res://scenes/PhysicsPoint.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://dxjb1px4w5sws" path="res://scenes/Spring.tscn" id="2"]
+[ext_resource type="Script" path="res://script/softbody/SquishyBody.gd" id="3"]
 [ext_resource type="Texture2D" uid="uid://j8k3h0ptnw7g" path="res://icon.png" id="4_aqywg"]
 
 [node name="SquishyBody" type="Node2D"]
 script = ExtResource("3")
+PhysicsPoint = ExtResource("1")
+PhysicsSpring = ExtResource("2")
 metadata/_edit_horizontal_guides_ = [-45.0, 45.0]
 metadata/_edit_vertical_guides_ = [-45.0, 45.0]
 
