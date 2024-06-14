@@ -146,6 +146,7 @@ func solve(Δt:float):
 		self.vertices[1].tPos += correctionVec2*0.0001
 		self.vertices[2].tPos += correctionVec3*0.0001
 		
+		# Just to display the force vectors
 		return [correctionVec1, correctionVec2, correctionVec3]
 
 # The normalized direction vector (the gradient of a distance constraint) between two points

@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://script/misc/Rotate.gd" id="5_lu0kl"]
 [ext_resource type="Script" path="res://script/misc/WorldCamera.gd" id="6"]
 [ext_resource type="Script" path="res://script/misc/Move.gd" id="6_5emu8"]
-[ext_resource type="PackedScene" uid="uid://dsbjltikqy2to" path="res://scenes/PBDBody.tscn" id="7_jt80x"]
+[ext_resource type="PackedScene" uid="uid://dsbjltikqy2to" path="res://scenes/PBDBody.tscn" id="6_kd57b"]
 
 [sub_resource type="CircleShape2D" id="2"]
 radius = 91.7878
@@ -25,12 +25,6 @@ size = Vector2(1292, 56)
 [node name="World" type="Node2D"]
 metadata/_edit_vertical_guides_ = [-598.0]
 metadata/_edit_horizontal_guides_ = [-775.0]
-
-[node name="PBDBody" parent="." instance=ExtResource("7_jt80x")]
-position = Vector2(-646.791, -1321)
-scale = Vector2(1.02791, 1)
-polygon = PackedVector2Array(-111.109, -97, 100, -100, 99.0272, 113, -115, 110)
-drawBoundingShapes = true
 
 [node name="WorldCamera" type="Camera2D" parent="."]
 position = Vector2(-273, -1345)
@@ -285,7 +279,7 @@ shape = SubResource("RectangleShape2D_aoks5")
 polygon = PackedVector2Array(-845, -27, 447, -27, 447, 29, -845, 29)
 
 [node name="MovingPiece3" type="Node2D" parent="Geometries"]
-position = Vector2(582, -833)
+position = Vector2(2431, -670)
 script = ExtResource("6_5emu8")
 moveSpeed = 4.0
 moveDistance = 30.0
@@ -302,7 +296,7 @@ shape = SubResource("RectangleShape2D_aoks5")
 polygon = PackedVector2Array(-845, -27, 447, -27, 447, 29, -845, 29)
 
 [node name="MovingPiece4" type="Node2D" parent="Geometries"]
-position = Vector2(-708, -830)
+position = Vector2(-1891, -1213)
 script = ExtResource("6_5emu8")
 moveSpeed = 4.0
 moveDistance = 30.0
@@ -317,3 +311,7 @@ shape = SubResource("RectangleShape2D_aoks5")
 
 [node name="Shape" type="Polygon2D" parent="Geometries/MovingPiece4/Body"]
 polygon = PackedVector2Array(-845, -27, 447, -27, 447, 29, -845, 29)
+
+[node name="PBDBody" parent="." instance=ExtResource("6_kd57b")]
+position = Vector2(-170, -1165)
+polygon = PackedVector2Array(-100, -100, -4, -240, 5, 17, 100, -100, 174, -4, 140, -225, 244, -100, 250, 72, 83, 284, -50, 231, 100, 100, -243, 214, -100, 100, -239, -13)

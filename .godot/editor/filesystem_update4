@@ -1,7 +1,9 @@
+res://scenes/SquishyBody.tscn
 res://default_env.tres
 res://scenes/2dWorld.tscn
 res://script/misc/picle.gdshader
 res://scenes/PBDBody.tscn
 res://scenes/PBDPoint.tscn
+res://scenes/PhysicsPoint.tscn
+res://scenes/Spring.tscn
 res://script/softbody/pbd/pbdBody.gd
-res://script/softbody/pbd/pbdPoint.gd

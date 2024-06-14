@@ -91,20 +91,15 @@ func _physics_process(Δt:float):
 	var Δts = Δt#/(substeps + 0.0)
 	
 	# Draw the lines and polygons if the user wants that
-	if drawLines:
-		for ec in edgeConstraints:
-			drawEdge([ec.vertices[0].tPos, ec.vertices[1].tPos])
-	
-	if drawPolys:
-		for ac in areaConstraints:
-			drawTriangle([ac.vertices[0].tPos, ac.vertices[1].tPos, ac.vertices[2].tPos])
+	if drawLines: for ec in edgeConstraints: drawEdge([ec.vertices[0].tPos,     ec.vertices[1].tPos])
+	if drawPolys: for ac in areaConstraints: drawTriangle([ac.vertices[0].tPos, ac.vertices[1].tPos, ac.vertices[2].tPos])
 	
 	# Calculate for each substep
 	for n in range(0, substeps):
 		
 		# PRE-SOLVE CALCULATIONS
 		for particle in allParticles:
-			#particle.velocity += gravity * Δts
+			particle.linear_velocity += gravity * Δts
 			particle.prevPos   = particle.tPos
 			particle.tPos      = particle.position
 			particle.tPos     += particle.linear_velocity * Δts # Godot does this (hopefully)
@@ -123,7 +118,7 @@ func _physics_process(Δt:float):
 			var triForceVecs = ac.solve(Δts)
 			
 			if drawForceVectors and n==0: # Only draw the force vectors on the first substep
-				# For both of the points in this edge
+				# For the 3 points in this face
 				for i in range(0, 3):
 					drawEdge([ac.vertices[i].tPos, ac.vertices[i].tPos + triForceVecs[i]/10], Color(0.8, 1, 0))
 		
@@ -553,6 +548,7 @@ func drawEdge(edge:Array, col:Color=Color(0, 1, 0, 0.3)):
 	line.add_point(edge[1])
 	
 	self.add_child(line)
+
 func drawTriangle(tri:Array):
 	var poly = Polygon2D.new()
 	
