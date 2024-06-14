@@ -36,8 +36,8 @@ func solve(Δt:float):
 	if self.constraintType == C_Type.EDGE:
 		α = 1 # The edges have wayyy more compliance than the area
 		
-		var p1:RigidBody2D = vertices[0]
-		var p2:RigidBody2D = vertices[1]
+		var p1:Area2D = vertices[0]
+		var p2:Area2D = vertices[1]
 		
 		# The length and rest length of this edge constraint
 		var l  = self.currentValue
@@ -87,9 +87,9 @@ func solve(Δt:float):
 	
 	# Triangle constraint
 	else:
-		var p1:RigidBody2D = vertices[0]
-		var p2:RigidBody2D = vertices[1]
-		var p3:RigidBody2D = vertices[2]
+		var p1:Area2D = vertices[0]
+		var p2:Area2D = vertices[1]
+		var p3:Area2D = vertices[2]
 		
 		# Just to save a couple characters down the line
 		var p1p:Vector2 = p1.position
